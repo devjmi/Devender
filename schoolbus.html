@@ -10,76 +10,121 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-
-        /* Keyframes for the blinking effect */
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 20px;
+            height: 20px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message-box {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 90%;
+            max-width: 400px;
         }
 
-        /* Class to apply the animation */
-        .blinking {
-            animation: blink 1.5s infinite;
+        /* --- Print-specific styles --- */
+        /* This media query ensures the print styles are only active when the user prints */
+        @media print {
+            body {
+                background-color: white !important;
+                margin: 0;
+                padding: 0;
+            }
+            /* Hide all interactive elements and controls */
+            #calculatorContainer, #commissionModal, #messageBox {
+                display: none;
+            }
+            /* Show the content that is meant for the PDF */
+            #pdfContent {
+                display: block !important;
+                font-family: 'serif';
+                color: black;
+                font-size: 14px;
+                padding: 20px;
+            }
+            /* Ensure headings and totals have consistent styling */
+            #pdfContent h1 {
+                text-align: center;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            #pdfContent .section-title {
+                font-weight: bold;
+                font-size: 16px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+                border-bottom: 1px solid #ccc;
+            }
+            #pdfContent .row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 5px;
+            }
+            #pdfContent .row-total {
+                font-weight: bold;
+                font-size: 18px;
+                color: #0d3466;
+            }
+            .total-premium-row {
+                padding-top: 10px;
+                border-top: 2px solid #0d3466;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-2 relative">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-2">
 
-    <!-- Background Image Container with Overlay -->
-    <div class="absolute inset-0 z-0" style="background-image: url('https://i.ibb.co/vxjgt2Dk/Whats-App-Image-2025-08-14-at-4-45-52-PM-89.jpg'); background-size: contain; background-position: center; background-repeat: no-repeat;">
-        <!-- Semi-transparent dark overlay for readability -->
-        <div class="absolute inset-0 bg-black opacity-50"></div>
-    </div>
-
-    <!-- Buttons Container -->
-    <div class="z-10 relative flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 p-4 w-full justify-center items-center">
-        <!-- Button to open the calculator -->
-        <button id="openCalculatorBtn" class="bg-blue-600 text-white font-bold text-xs px-1 py-0.5 rounded-full shadow-lg hover:bg-blue-700 transition-colors transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 w-full md:w-auto blinking">
-            Open Premium and Commission Calculator
-        </button>
-        <!-- Button for "Contact Us" linking to WhatsApp -->
-        <a href="https://api.whatsapp.com/send?phone=9289719341" target="_blank" class="bg-green-600 text-white font-bold text-xs px-1 py-0.5 rounded-full shadow-lg hover:bg-green-700 transition-colors transform hover:scale-105 flex items-center justify-center w-full md:w-auto blinking">
-            Contact Us
-        </a>
-    </div>
-
-    <!-- Calculator Container - initially hidden and centered -->
-    <div id="calculatorContainer" class="bg-white p-3 rounded-lg shadow-lg w-full max-w-64 z-10 relative hidden">
+    <!-- Calculator Container -->
+    <div id="calculatorContainer" class="bg-white p-4 rounded-lg shadow-lg w-full max-w-sm md:max-w-md z-10 relative">
         
         <!-- Header -->
         <div class="text-center mb-4">
-            <h1 class="text-lg font-extrabold text-blue-800 mb-1">Bus Premium Calculator</h1>
+            <h1 class="text-lg font-extrabold text-blue-800 mb-1">School Bus Premium and Commission Calculator</h1>
         </div>
 
         <!-- Input Form -->
-        <form id="premiumForm" class="space-y-2">
+        <form id="premiumForm" class="space-y-3">
 
             <!-- IDV -->
             <div>
-                <label for="idv" class="block text-xs font-medium text-gray-700">Insured Declared Value (IDV) in ₹</label>
-                <input type="number" id="idv" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-xs focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 500000" required>
+                <label for="idv" class="block text-sm font-medium text-gray-700">Insured Declared Value (IDV) in ₹</label>
+                <input type="number" id="idv" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 500000" required>
             </div>
 
-            <!-- Seating & Personnel Details Row -->
-            <div class="grid grid-cols-2 gap-2">
+            <!-- Seating Capacity & Carrying Capacity on one line -->
+            <div class="grid grid-cols-2 gap-3">
                 <!-- Seating Capacity -->
                 <div>
-                    <label for="seatingCapacity" class="block text-xs font-medium text-gray-700">Seating Capacity</label>
-                    <input type="number" id="seatingCapacity" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-xs focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 40" required>
+                    <label for="seatingCapacity" class="block text-sm font-medium text-gray-700">Seating Capacity</label>
+                    <input type="number" id="seatingCapacity" min="8" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 40" required>
                 </div>
-                <!-- Paid Drivers -->
+                <!-- Carrying Capacity -->
                 <div>
-                    <label for="paidDrivers" class="block text-xs font-medium text-gray-700">No. of Paid Drivers</label>
-                    <input type="number" id="paidDrivers" value="1" min="0" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-xs focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                    <label for="carryingCapacity" class="block text-sm font-medium text-gray-700">Carrying Capacity</label>
+                    <input type="text" id="carryingCapacity" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm bg-gray-200 cursor-not-allowed" value="N/A" readonly>
                 </div>
             </div>
 
             <!-- NCB & Discount Row -->
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-3">
                 <!-- NCB Percentage -->
                 <div>
-                    <label for="ncb" class="block text-xs font-medium text-gray-700">No Claim Bonus (NCB) %</label>
-                    <select id="ncb" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-xs focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                    <label for="ncb" class="block text-sm font-medium text-gray-700">No Claim Bonus (NCB) %</label>
+                    <select id="ncb" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                         <option value="0">0%</option>
                         <option value="20">20%</option>
                         <option value="25">25%</option>
@@ -90,59 +135,68 @@
                 </div>
                 <!-- Company Discount -->
                 <div>
-                    <label for="companyDiscount" class="block text-xs font-medium text-gray-700">Company Discount</label>
-                    <select id="companyDiscount" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-xs focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                    <label for="companyDiscount" class="block text-sm font-medium text-gray-700">Company Discount</label>
+                    <select id="companyDiscount" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                         <option value="none">No Discount</option>
                         <option value="digit">Digit (99%)</option>
                         <option value="tata">TATA AIG (95%)</option>
                         <option value="reliance">Reliance General (95%)</option>
+                        <option value="icici">ICICI Lombard (99%)</option>
                     </select>
                 </div>
             </div>
             
-            <!-- Fuel Type Checkbox -->
-            <div class="flex items-center space-x-2">
-                <input type="checkbox" id="cngFuel" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                <label for="cngFuel" class="text-xs font-medium text-gray-700">CNG Fuel Type</label>
+            <!-- Additional Options Checkboxes & Inputs on one line -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- CNG Fuel Type Checkbox -->
+                <div>
+                    <label for="cngFuel" class="block text-sm font-medium text-gray-700">CNG Fuel Type</label>
+                    <input type="checkbox" id="cngFuel" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1">
+                </div>
+                <!-- Legal Liability to Paid Driver as an editable field -->
+                <div>
+                    <label for="llDriver" class="block text-sm font-medium text-gray-700">LL to Paid Driver</label>
+                    <input type="number" id="llDriver" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 1">
+                </div>
             </div>
 
             <!-- Calculate Button -->
-            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-md text-base hover:bg-blue-700 transition-colors">
                 Calculate
             </button>
         </form>
 
         <!-- Results Section -->
-        <div id="results" class="mt-3 hidden">
-            <h2 class="text-sm font-bold text-gray-800 mb-2">Premium Breakdown</h2>
-            <div class="space-y-1 p-3 bg-gray-50 rounded-md border border-gray-200 text-xs">
+        <div id="results" class="mt-4 hidden">
+            <h2 class="text-base font-bold text-gray-800 mb-2">Premium Breakdown</h2>
+            <div class="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 text-sm">
                 <div class="flex justify-between items-center text-gray-600">
                     <span>Own Damage (OD) Premium</span>
                     <span id="odPremium" class="font-semibold text-gray-800"></span>
                 </div>
-                <div id="cngOdPremiumSection" class="flex justify-between items-center text-gray-600 hidden">
+                <div class="flex justify-between items-center text-gray-600">
                     <span>CNG Premium</span>
-                    <span id="cngOdPremiumAmount" class="font-semibold"></span>
+                    <span id="cngOdPremiumAmount" class="font-semibold text-gray-800"></span>
                 </div>
                 <div class="flex justify-between items-center text-gray-600">
                     <span>Third-Party (TP) Liability Premium</span>
                     <span id="tpPremium" class="font-semibold text-gray-800"></span>
                 </div>
                 <div class="flex justify-between items-center text-gray-600">
-                    <span>Legal Liability to Paid Driver</span>
-                    <span id="llPremium" class="font-semibold text-gray-800"></span>
-                </div>
-                <div class="flex justify-between items-center text-gray-600">
                     <span>IMT 23</span>
                     <span id="imt23Premium" class="font-semibold text-gray-800"></span>
                 </div>
-                <div id="towingChargeSection" class="flex justify-between items-center text-gray-600 hidden">
+                <div class="flex justify-between items-center text-gray-600">
                     <span>Towing Charge</span>
                     <span id="towingChargePremium" class="font-semibold text-gray-800"></span>
                 </div>
-                <div id="cngTpPremiumSection" class="flex justify-between items-center text-gray-600 hidden">
+                <div class="flex justify-between items-center text-gray-600">
                     <span>CNG TP Premium</span>
-                    <span id="cngTpPremiumAmount" class="font-semibold"></span>
+                    <span id="cngTpPremiumAmount" class="font-semibold text-gray-800"></span>
+                </div>
+                <div class="flex justify-between items-center text-gray-600">
+                    <span>Legal Liability to Paid Driver</span>
+                    <span id="llDriverPremiumAmount" class="font-semibold text-gray-800"></span>
                 </div>
                 <div class="flex justify-between items-center text-green-600">
                     <span id="companyDiscountLabel">Company Discount</span>
@@ -150,11 +204,15 @@
                 </div>
                 <hr class="border-t border-gray-300">
                 <div class="flex justify-between items-center text-gray-600 font-semibold text-gray-800">
+                    <span>Subtotal Premium (before GST)</span>
+                    <span id="subtotalPremium" class="font-semibold text-gray-800"></span>
+                </div>
+                <div class="flex justify-between items-center text-gray-600 font-semibold text-gray-800">
                     <span>GST (18%)</span>
                     <span id="gstAmount" class="font-semibold text-gray-800"></span>
                 </div>
                 <hr class="border-t border-gray-300">
-                <div class="flex justify-between items-center text-sm font-bold text-gray-800">
+                <div class="flex justify-between items-center text-base font-bold text-gray-800">
                     <span>Total Premium (with GST)</span>
                     <span id="totalPremium" class="text-blue-600"></span>
                 </div>
@@ -165,6 +223,12 @@
                 <span>Commission Breakdown</span>
                 <span id="commissionToggleIcon">▶</span>
             </button>
+
+            <!-- Generate PDF Button -->
+            <button id="generatePdfBtn" class="w-full mt-2 bg-purple-600 text-white font-bold py-2 rounded-md text-base hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2">
+                <span id="generatePdfText">Generate PDF</span>
+                <div id="generatePdfLoader" class="loader hidden"></div>
+            </button>
         </div>
     </div>
     
@@ -173,24 +237,29 @@
         <div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm relative">
             <!-- Modal Header and Close Button -->
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-800">Commission Breakdown</h2>
+                <h2 class="text-xl font-bold text-gray-800">Commission Breakdown</h2>
                 <button id="closeModalBtn" class="text-gray-500 hover:text-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-
+            
             <!-- Commission Rate Input within the modal -->
             <div class="mb-4">
-                <label for="commissionRate" class="block text-sm font-medium text-gray-700">Commission Rate %</label>
-                <input type="number" id="commissionRate" value="15" min="0" max="100" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-xs focus:ring-green-500 focus:border-green-500 transition-colors" required>
+                <label for="commissionRate" class="block text-base font-medium text-gray-700">Commission Rate %</label>
+                <input type="number" id="commissionRate" value="75" min="0" max="100" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-base focus:ring-green-500 focus:border-green-500 transition-colors" required>
             </div>
 
             <!-- Commission Results Section -->
-            <div id="commissionSection" class="space-y-1 p-3 bg-gray-100 rounded-md border border-gray-300 text-xs">
+            <div id="commissionSection" class="space-y-2 p-3 bg-gray-100 rounded-md border border-gray-300 text-sm">
+                <!-- New line to show the premium amount the commission is based on -->
                 <div class="flex justify-between items-center text-gray-600">
-                    <span>Basic Commission (<span id="commissionRateDisplay">15</span>% of Premium before GST)</span>
+                    <span>Premium for Commission</span>
+                    <span id="premiumForCommission" class="font-semibold text-gray-800"></span>
+                </div>
+                <div class="flex justify-between items-center text-gray-600">
+                    <span>Commission before TDS (<span id="commissionRateDisplay">75</span>% of Premium)</span>
                     <span id="basicCommission" class="font-semibold text-gray-800"></span>
                 </div>
                 <div class="flex justify-between items-center text-gray-600">
@@ -198,214 +267,324 @@
                     <span id="tdsOnCommission" class="font-semibold text-gray-800"></span>
                 </div>
                 <hr class="border-t border-gray-300">
-                <div class="flex justify-between items-center text-sm font-bold text-gray-800">
+                <div class="flex justify-between items-center text-base font-bold text-gray-800">
                     <span>Net Commission</span>
                     <span id="totalCommission" class="text-green-600"></span>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Custom Message Box Modal -->
+    <div id="messageBox" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="message-box">
+            <p id="messageText" class="text-gray-800 text-center mb-4"></p>
+            <button id="closeMessageBoxBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded-md hover:bg-blue-700 transition-colors">OK</button>
+        </div>
+    </div>
 
-
-    <!-- JavaScript for Calculations -->
+    <!-- PDF Content Area (Hidden by default) -->
+    <div id="pdfContent" class="hidden">
+        <h1>Premium Breakdown</h1>
+        <div class="text-sm my-4">
+            <p><strong>Insured Declared Value (IDV):</strong> <span id="pdf-idv"></span></p>
+            <p><strong>Seating Capacity:</strong> <span id="pdf-seating-capacity"></span></p>
+        </div>
+        
+        <div class="section-title">Own Damage Premium</div>
+        <div class="row">
+            <span>Own Damage Premium</span>
+            <span id="pdf-od-premium"></span>
+        </div>
+        <div class="row">
+            <span>CNG Premium</span>
+            <span id="pdf-cng-od-premium"></span>
+        </div>
+        <div class="row">
+            <span id="pdf-company-discount-label">Company Discount</span>
+            <span id="pdf-company-discount-amount"></span>
+        </div>
+        
+        <div class="section-title">Third Party and Other Premiums</div>
+        <div class="row">
+            <span>Third-Party (TP) Liability Premium</span>
+            <span id="pdf-tp-premium"></span>
+        </div>
+        <div class="row">
+            <span>IMT 23</span>
+            <span id="pdf-imt23-premium"></span>
+        </div>
+        <div class="row">
+            <span>Towing Charge</span>
+            <span id="pdf-towing-charge"></span>
+        </div>
+        <div class="row">
+            <span>CNG TP Premium</span>
+            <span id="pdf-cng-tp-premium"></span>
+        </div>
+        <div class="row">
+            <span>Legal Liability to Paid Driver</span>
+            <span id="pdf-ll-driver-premium"></span>
+        </div>
+        
+        <div class="section-title">Summary</div>
+        <div class="row">
+            <span>Subtotal Premium (before GST)</span>
+            <span id="pdf-subtotal-premium"></span>
+        </div>
+        <div class="row">
+            <span>GST (18%)</span>
+            <span id="pdf-gst-amount"></span>
+        </div>
+        
+        <div class="row total-premium-row">
+            <span class="row-total">Total Premium (with GST)</span>
+            <span class="row-total" id="pdf-total-premium"></span>
+        </div>
+    </div>
+    
+    <!-- JavaScript for Calculations and PDF Generation -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const openCalculatorBtn = document.getElementById('openCalculatorBtn');
-            const calculatorContainer = document.getElementById('calculatorContainer');
+        document.addEventListener('DOMContentLoaded', () => {
+            const premiumForm = document.getElementById('premiumForm');
+            const seatingCapacityInput = document.getElementById('seatingCapacity');
+            const carryingCapacityDisplay = document.getElementById('carryingCapacity');
+            const resultsSection = document.getElementById('results');
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            const closeMessageBoxBtn = document.getElementById('closeMessageBoxBtn');
 
-            // Handle showing the calculator
-            openCalculatorBtn.addEventListener('click', function() {
-                openCalculatorBtn.classList.add('hidden');
-                calculatorContainer.classList.remove('hidden');
+            // Global variable to store calculated data for both display and PDF
+            let calculatedData = {};
+
+            function showMessage(text) {
+                messageText.textContent = text;
+                messageBox.classList.remove('hidden');
+            }
+
+            closeMessageBoxBtn.addEventListener('click', () => {
+                messageBox.classList.add('hidden');
             });
-            
-            // Handle hiding the calculator when clicking outside of it
-            document.body.addEventListener('click', function(event) {
-                // Check if the calculator is visible and the click is outside
-                if (!calculatorContainer.classList.contains('hidden') && !calculatorContainer.contains(event.target) && event.target !== openCalculatorBtn) {
-                    calculatorContainer.classList.add('hidden');
-                    openCalculatorBtn.classList.remove('hidden');
+
+            const calculateAndDisplayPremium = () => {
+                const idv = parseFloat(document.getElementById('idv').value);
+                const seatingCapacity = parseInt(seatingCapacityInput.value);
+                
+                if (seatingCapacity < 8) {
+                    showMessage("Seating capacity cannot be less than 8.");
+                    return;
                 }
+                
+                const licensedPassengers = seatingCapacity > 0 ? seatingCapacity - 1 : 0;
+                const ncb = parseInt(document.getElementById('ncb').value);
+                const selectedCompany = document.getElementById('companyDiscount').value;
+                const isCngFuel = document.getElementById('cngFuel').checked;
+                const llDriverValue = parseFloat(document.getElementById('llDriver').value) || 0;
+
+                carryingCapacityDisplay.value = licensedPassengers;
+                
+                if (!idv || !seatingCapacity) {
+                    resultsSection.classList.add('hidden');
+                    return;
+                }
+
+                const odRate = 1.739;
+                const basicOdPremium = idv * (odRate / 100);
+
+                let loadingPremium;
+                if (seatingCapacity <= 19) {
+                    loadingPremium = 350;
+                } else if (seatingCapacity >= 20 && seatingCapacity <= 37) {
+                    loadingPremium = 450;
+                } else {
+                    loadingPremium = 550;
+                }
+                
+                const cngOdPremiumRate = 0.05;
+                let cngOdPremium = isCngFuel ? basicOdPremium * cngOdPremiumRate : 0;
+                
+                const odPremiumBeforeNcb = basicOdPremium + loadingPremium + cngOdPremium;
+                
+                const ncbDiscount = odPremiumBeforeNcb * (ncb / 100);
+                const odPremiumAfterNcb = odPremiumBeforeNcb - ncbDiscount;
+                
+                const imt23Rate = 0.15;
+                const imt23PremiumBeforeDiscount = odPremiumAfterNcb * imt23Rate;
+
+                let discountRate = 0;
+                let discountLabelText = 'Company Discount';
+                let towingCharge = 0;
+                
+                if (selectedCompany === 'digit') {
+                    discountRate = 0.99;
+                    discountLabelText = 'Digit Discount (99%)';
+                } else if (selectedCompany === 'tata') {
+                    discountRate = 0.95;
+                    discountLabelText = 'TATA AIG Discount (95%)';
+                } else if (selectedCompany === 'reliance') {
+                    discountRate = 0.95;
+                    discountLabelText = 'Reliance General Discount (95%)';
+                    towingCharge = 500;
+                } else if (selectedCompany === 'icici') {
+                    discountRate = 0.99;
+                    discountLabelText = 'ICICI Lombard Discount (99%)';
+                    towingCharge = 0;
+                }
+
+                const odPremiumAfterCompanyDiscount = odPremiumAfterNcb * (1 - discountRate);
+                const imt23PremiumAfterCompanyDiscount = imt23PremiumBeforeDiscount * (1 - discountRate);
+                const cngOdPremiumAfterDiscount = isCngFuel ? cngOdPremium * (1 - discountRate) : 0;
+
+                const companyDiscountAmount = (odPremiumAfterNcb + imt23PremiumBeforeDiscount + cngOdPremium) * discountRate;
+
+                const basicTpPremium = 12192;
+                const licensedPassengerPremium = licensedPassengers * 745;
+                const totalTpPremium = basicTpPremium + licensedPassengerPremium;
+                
+                let cngTpPremium = isCngFuel ? 60 : 0;
+                let llDriverPremium = llDriverValue > 0 ? (llDriverValue === 1 ? 50 : (llDriverValue === 2 ? 100 : llDriverValue * licensedPassengers)) : 0;
+                
+                const totalPremiumBeforeGst = odPremiumAfterCompanyDiscount + imt23PremiumAfterCompanyDiscount + totalTpPremium + towingCharge + cngTpPremium + cngOdPremiumAfterDiscount + llDriverPremium;
+                
+                const gstAmount = totalPremiumBeforeGst * 0.18;
+                const finalTotalPremiumWithGst = totalPremiumBeforeGst + gstAmount;
+
+                // Update the global calculatedData object
+                calculatedData = {
+                    idv,
+                    seatingCapacity,
+                    licensedPassengers,
+                    odPremiumAfterCompanyDiscount,
+                    cngOdPremiumAfterDiscount,
+                    totalTpPremium,
+                    imt23PremiumAfterCompanyDiscount,
+                    towingCharge,
+                    cngTpPremium,
+                    llDriverPremium,
+                    companyDiscountLabel: discountLabelText,
+                    companyDiscountAmount,
+                    subtotalPremium: totalPremiumBeforeGst,
+                    gstAmount,
+                    totalPremium: finalTotalPremiumWithGst,
+                };
+
+                // Display all breakdown lines, even if zero
+                document.getElementById('odPremium').textContent = formatCurrency(calculatedData.odPremiumAfterCompanyDiscount);
+                document.getElementById('cngOdPremiumAmount').textContent = formatCurrency(calculatedData.cngOdPremiumAfterDiscount);
+                document.getElementById('tpPremium').textContent = formatCurrency(calculatedData.totalTpPremium);
+                document.getElementById('imt23Premium').textContent = formatCurrency(calculatedData.imt23PremiumAfterCompanyDiscount);
+                document.getElementById('towingChargePremium').textContent = formatCurrency(calculatedData.towingCharge);
+                document.getElementById('cngTpPremiumAmount').textContent = formatCurrency(calculatedData.cngTpPremium);
+                document.getElementById('llDriverPremiumAmount').textContent = formatCurrency(calculatedData.llDriverPremium);
+                document.getElementById('companyDiscountLabel').textContent = calculatedData.companyDiscountLabel;
+                document.getElementById('companyDiscountAmount').textContent = formatCurrency(calculatedData.companyDiscountAmount, true);
+                
+                document.getElementById('subtotalPremium').textContent = formatCurrency(calculatedData.subtotalPremium);
+                document.getElementById('gstAmount').textContent = formatCurrency(calculatedData.gstAmount);
+                document.getElementById('totalPremium').textContent = formatCurrency(calculatedData.totalPremium);
+
+                resultsSection.classList.remove('hidden');
+            };
+
+            const calculateAndDisplayCommission = () => {
+                const totalPremiumBeforeGst = calculatedData?.subtotalPremium || 0;
+                const commissionRateInput = parseFloat(document.getElementById('commissionRate').value);
+                
+                if (isNaN(totalPremiumBeforeGst) || totalPremiumBeforeGst === 0) {
+                     document.getElementById('premiumForCommission').textContent = formatCurrency(0);
+                     document.getElementById('basicCommission').textContent = formatCurrency(0);
+                     document.getElementById('tdsOnCommission').textContent = formatCurrency(0);
+                     document.getElementById('totalCommission').textContent = formatCurrency(0);
+                     return;
+                }
+                
+                const commissionRate = commissionRateInput / 100;
+                const basicCommission = totalPremiumBeforeGst * commissionRate;
+                const tdsRate = 0.02;
+                const tdsOnCommission = basicCommission * tdsRate;
+                const totalCommission = basicCommission - tdsOnCommission;
+                
+                document.getElementById('premiumForCommission').textContent = formatCurrency(totalPremiumBeforeGst);
+                document.getElementById('commissionRateDisplay').textContent = commissionRateInput;
+                document.getElementById('basicCommission').textContent = formatCurrency(basicCommission);
+                document.getElementById('tdsOnCommission').textContent = formatCurrency(tdsOnCommission);
+                document.getElementById('totalCommission').textContent = formatCurrency(totalCommission);
+            };
+
+            premiumForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                calculateAndDisplayPremium();
             });
-            
-            // Commission breakdown modal functionality
+
+            seatingCapacityInput.addEventListener('input', function() {
+                const seatingCapacity = parseInt(this.value);
+                const licensedPassengers = seatingCapacity > 0 ? seatingCapacity - 1 : 0;
+                carryingCapacityDisplay.value = licensedPassengers > 0 ? licensedPassengers : "N/A";
+            });
+
             const toggleCommissionBtn = document.getElementById('toggleCommissionBtn');
             const commissionModal = document.getElementById('commissionModal');
             const closeModalBtn = document.getElementById('closeModalBtn');
-            
+            const commissionRateInput = document.getElementById('commissionRate');
+
             toggleCommissionBtn.addEventListener('click', function() {
+                if (!Object.keys(calculatedData).length) {
+                     showMessage("Please calculate the premium first.");
+                     return;
+                }
                 commissionModal.classList.remove('hidden');
-                // Ensure the commission is calculated and displayed when the modal opens
                 calculateAndDisplayCommission();
             });
 
             closeModalBtn.addEventListener('click', function() {
                 commissionModal.classList.add('hidden');
             });
-        });
-
-        document.getElementById('premiumForm').addEventListener('submit', function(event) {
-            // Prevent the default form submission
-            event.preventDefault();
             
-            // This function handles the main premium calculation and displays it
-            calculateAndDisplayPremium();
-        });
+            commissionRateInput.addEventListener('input', calculateAndDisplayCommission);
 
-        // Event listener for the commission rate input inside the modal
-        document.getElementById('commissionRate').addEventListener('input', function() {
-            // Recalculate and display the commission whenever the rate changes
-            calculateAndDisplayCommission();
-        });
-
-        function calculateAndDisplayPremium() {
-            const idv = parseFloat(document.getElementById('idv').value);
-            const seatingCapacity = parseInt(document.getElementById('seatingCapacity').value);
-            const paidDrivers = parseInt(document.getElementById('paidDrivers').value);
-            const licensedPassengers = seatingCapacity - 1;
-            const ncb = parseInt(document.getElementById('ncb').value);
-            const selectedCompany = document.getElementById('companyDiscount').value;
-            const isCngFuel = document.getElementById('cngFuel').checked;
-
-            // --- Own Damage (OD) Premium Calculation ---
-            const odRate = 1.739;
-            const basicOdPremium = idv * (odRate / 100);
-
-            let loadingPremium;
-            if (seatingCapacity <= 19) {
-                loadingPremium = 350;
-            } else if (seatingCapacity >= 20 && seatingCapacity <= 37) {
-                loadingPremium = 450;
-            } else {
-                loadingPremium = 550;
-            }
+            const generatePdfBtn = document.getElementById('generatePdfBtn');
+            const generatePdfText = document.getElementById('generatePdfText');
+            const generatePdfLoader = document.getElementById('generatePdfLoader');
+            const pdfContent = document.getElementById('pdfContent');
             
-            // --- CNG OD Premium Add-on ---
-            const cngOdPremiumRate = 0.05;
-            let cngOdPremium = isCngFuel ? basicOdPremium * cngOdPremiumRate : 0;
-            
-            // --- Sum of all OD-related premiums before discounts ---
-            const odPremiumBeforeNcb = basicOdPremium + loadingPremium + cngOdPremium;
-            
-            // --- Apply NCB to the total OD premium ---
-            const ncbDiscount = odPremiumBeforeNcb * (ncb / 100);
-            const odPremiumAfterNcb = odPremiumBeforeNcb - ncbDiscount;
-            
-            // --- IMT 23 Premium Calculation (0.15% of the OD premium after NCB) ---
-            const imt23Rate = 0.15;
-            const imt23PremiumBeforeDiscount = odPremiumAfterNcb * imt23Rate;
-
-            // --- Company Discount Logic ---
-            let discountRate = 0;
-            let discountLabelText = 'Company Discount';
-            let towingCharge = 0;
-            
-            if (selectedCompany === 'digit') {
-                discountRate = 0.99;
-                discountLabelText = 'Company Discount (99%)';
-            } else if (selectedCompany === 'tata' || selectedCompany === 'reliance') {
-                discountRate = 0.95;
-                if (selectedCompany === 'reliance') {
-                    discountLabelText = 'Company Discount (95%)';
-                    towingCharge = 500;
-                } else {
-                    discountLabelText = 'Company Discount (95%)';
+            generatePdfBtn.addEventListener('click', () => {
+                if (!Object.keys(calculatedData).length) {
+                    showMessage("Please calculate the premium first.");
+                    return;
                 }
-            }
+                
+                // Update the PDF content with the calculated data
+                document.getElementById('pdf-idv').textContent = formatCurrency(calculatedData.idv);
+                document.getElementById('pdf-seating-capacity').textContent = calculatedData.seatingCapacity;
+                document.getElementById('pdf-od-premium').textContent = formatCurrency(calculatedData.odPremiumAfterCompanyDiscount);
+                document.getElementById('pdf-cng-od-premium').textContent = formatCurrency(calculatedData.cngOdPremiumAfterDiscount);
+                document.getElementById('pdf-company-discount-label').textContent = calculatedData.companyDiscountLabel;
+                document.getElementById('pdf-company-discount-amount').textContent = formatCurrency(calculatedData.companyDiscountAmount, true);
+                document.getElementById('pdf-tp-premium').textContent = formatCurrency(calculatedData.totalTpPremium);
+                document.getElementById('pdf-imt23-premium').textContent = formatCurrency(calculatedData.imt23PremiumAfterCompanyDiscount);
+                document.getElementById('pdf-towing-charge').textContent = formatCurrency(calculatedData.towingCharge);
+                document.getElementById('pdf-cng-tp-premium').textContent = formatCurrency(calculatedData.cngTpPremium);
+                document.getElementById('pdf-ll-driver-premium').textContent = formatCurrency(calculatedData.llDriverPremium);
+                document.getElementById('pdf-subtotal-premium').textContent = formatCurrency(calculatedData.subtotalPremium);
+                document.getElementById('pdf-gst-amount').textContent = formatCurrency(calculatedData.gstAmount);
+                document.getElementById('pdf-total-premium').textContent = formatCurrency(calculatedData.totalPremium);
 
-            // --- Apply company discount to each component separately for the breakdown ---
-            const odPremiumAfterCompanyDiscount = odPremiumAfterNcb * (1 - discountRate);
-            const imt23PremiumAfterCompanyDiscount = imt23PremiumBeforeDiscount * (1 - discountRate);
-
-            // Calculate the total discount amount
-            const companyDiscountAmount = (odPremiumAfterNcb + imt23PremiumBeforeDiscount) * discountRate;
-
-            // --- Third-Party (TP) Liability Premium Calculation ---
-            const basicTpPremium = 12192;
-            const paidDriverPremium = paidDrivers * 50;
-            const licensedPassengerPremium = licensedPassengers * 745;
-            const totalTpPremium = basicTpPremium + paidDriverPremium + licensedPassengerPremium - 50;
-            
-            // --- Legal Liability Premium ---
-            const llPremium = 50;
-
-            // --- CNG TP Premium ---
-            let cngTpPremium = 0;
-            if (isCngFuel) {
-                cngTpPremium = 60;
-            }
-            
-            // --- Total Premium Before GST ---
-            const totalPremiumBeforeGst = odPremiumAfterCompanyDiscount + imt23PremiumAfterCompanyDiscount + totalTpPremium + llPremium + towingCharge + cngTpPremium;
-            
-            // --- GST Calculation (18%) ---
-            const gstAmount = totalPremiumBeforeGst * 0.18;
-            const finalTotalPremiumWithGst = totalPremiumBeforeGst + gstAmount;
-
-            // Display results in the HTML
-            document.getElementById('odPremium').textContent = formatCurrency(odPremiumAfterCompanyDiscount);
-            document.getElementById('tpPremium').textContent = formatCurrency(totalTpPremium);
-            document.getElementById('llPremium').textContent = formatCurrency(llPremium);
-            document.getElementById('imt23Premium').textContent = formatCurrency(imt23PremiumAfterCompanyDiscount);
-            document.getElementById('companyDiscountLabel').textContent = discountLabelText;
-            document.getElementById('companyDiscountAmount').textContent = formatCurrency(companyDiscountAmount, true);
-            document.getElementById('gstAmount').textContent = formatCurrency(gstAmount);
-            document.getElementById('totalPremium').textContent = formatCurrency(finalTotalPremiumWithGst);
-            
-            // Display towing charge only if applicable
-            const towingChargeSection = document.getElementById('towingChargeSection');
-            if (towingCharge > 0) {
-                towingChargeSection.classList.remove('hidden');
-                document.getElementById('towingChargePremium').textContent = formatCurrency(towingCharge);
-            } else {
-                towingChargeSection.classList.add('hidden');
-            }
-
-            // Display CNG TP Premium only if applicable
-            const cngTpPremiumSection = document.getElementById('cngTpPremiumSection');
-            if (cngTpPremium > 0) {
-                cngTpPremiumSection.classList.remove('hidden');
-                document.getElementById('cngTpPremiumAmount').textContent = formatCurrency(cngTpPremium);
-            } else {
-                cngTpPremiumSection.classList.add('hidden');
-            }
-
-            // Display CNG OD Premium after discount only if applicable
-            const cngOdPremiumSection = document.getElementById('cngOdPremiumSection');
-            if (isCngFuel) {
-                cngOdPremiumSection.classList.remove('hidden');
-                // Display the discounted CNG premium amount
-                document.getElementById('cngOdPremiumAmount').textContent = formatCurrency(cngOdPremium * (1 - discountRate));
-            } else {
-                cngOdPremiumSection.classList.add('hidden');
-            }
-
-            // Show the results section
-            document.getElementById('results').classList.remove('hidden');
-
-            // Store the premium before GST for commission calculation
-            window.totalPremiumBeforeGst = totalPremiumBeforeGst;
-        }
-
-        function calculateAndDisplayCommission() {
-            // Read premium before GST from the stored variable
-            const totalPremiumBeforeGst = window.totalPremiumBeforeGst || 0;
-            const commissionRateInput = parseFloat(document.getElementById('commissionRate').value);
-            
-            // --- Commission Calculation ---
-            const commissionRate = commissionRateInput / 100;
-            const basicCommission = totalPremiumBeforeGst * commissionRate;
-            const tdsRate = 0.02;
-            const tdsOnCommission = basicCommission * tdsRate;
-            const totalCommission = basicCommission - tdsOnCommission;
-            
-            // Display commission details in the modal
-            document.getElementById('commissionRateDisplay').textContent = commissionRateInput;
-            document.getElementById('basicCommission').textContent = formatCurrency(basicCommission);
-            document.getElementById('tdsOnCommission').textContent = formatCurrency(tdsOnCommission);
-            document.getElementById('totalCommission').textContent = formatCurrency(totalCommission);
-        }
-
+                // Temporarily disable the button and show loading state
+                generatePdfBtn.disabled = true;
+                generatePdfText.textContent = 'Generating...';
+                generatePdfLoader.classList.remove('hidden');
+                
+                // Use a short delay to allow the DOM to update before printing
+                setTimeout(() => {
+                    window.print();
+                    
+                    // Re-enable the button and hide loading state after printing
+                    generatePdfBtn.disabled = false;
+                    generatePdfText.textContent = 'Generate PDF';
+                    generatePdfLoader.classList.add('hidden');
+                }, 500);
+            });
+        });
 
         // Helper function to format numbers as Indian Rupees
         function formatCurrency(amount, isDiscount = false) {
