@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Tools Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base font and transition for a smooth experience */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        /* Custom animation for results box */
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-4xl transform transition-all duration-500 hover:scale-[1.01] overflow-hidden">
+        
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-indigo-800 mb-2">Insurance Tools Hub</h1>
+            <p class="text-blue-900">A Collection Of Calculators And Links For Insurance Professionals<br>By Devender Kumar</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-2 mb-6 border-b border-gray-200">
+            <button id="tab-idv" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                IDV Calculator
+            </button>
+            <button id="tab-depreciation" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Depreciation
+            </button>
+            <button id="tab-commission" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Commission
+            </button>
+            <button id="tab-cutpay" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Cut Pay
+            </button>
+            <button id="tab-vahan" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Vahan Data
+            </button>
+            <a href="https://devjmi.github.io/Devender/schoolbus.html" target="_blank" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                School Bus Premium Calculator
+            </a>
+            <a href="https://devjmi.github.io/Devender/GCV%20Premium%20Calculator%20.html" target="_blank" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                GCV Premium Calculator
+            </a>
+        </div>
+        <div id="content-container" class="flex flex-col items-center">
+            <div id="idv-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Vehicle's IDV Calculator</h2>
+                <p class="text-center text-gray-500 mb-6">Calculate your vehicle's approximate IDV based on its age.</p>
+                
+                <form id="idv-form" class="space-y-4">
+                    <div>
+                        <label for="initial-value" class="block text-sm font-semibold text-gray-700">Vehicle Purchase Amount:</label>
+                        <input type="number" id="initial-value" required class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                    </div>
+                    <div>
+                        <label for="mfg-year" class="block text-sm font-semibold text-gray-700">Manufacturing Year:</label>
+                        <input type="number" id="mfg-year" required placeholder="e.g., 2022" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Calculate IDV
+                    </button>
+                </form>
+            </div>
+            <div id="depreciation-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Depreciation Calculator</h2>
+                <p class="text-center text-gray-500 mb-6">Calculate remaining value after a fixed depreciation percentage.</p>
+                
+                <form id="depreciation-form" class="space-y-4">
+                    <div>
+                        <label for="dep-initial-value" class="block text-sm font-medium text-slate-600 mb-2">Asset Value:</label>
+                        <input type="number" id="dep-initial-value" placeholder="e.g., 100000" class="form-input w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Calculate
+                    </button>
+                </form>
+            </div>
+            <div id="commission-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Commission Calculator</h2>
+                <p class="text-center text-gray-500 mb-6">Calculate your commission with TDS deduction.</p>
+                <form id="commission-form" class="space-y-6">
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-gray-700 border-b border-gray-200 pb-2">Own Damage (OD)</h3>
+                        <div>
+                            <label for="odPremium" class="block text-sm font-medium text-gray-600 mb-2">OD Premium:</label>
+                            <input type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition" id="odPremium" value="0" placeholder="e.g., 10000">
+                        </div>
+                        <div>
+                            <label for="odCommissionRate" class="block text-sm font-medium text-gray-600 mb-2">OD Commission Rate (%):</label>
+                            <input type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition" id="odCommissionRate" value="0" placeholder="e.g., 15">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-gray-700 border-b border-gray-200 pb-2">Third-Party (TP)</h3>
+                        <div>
+                            <label for="tpPremium" class="block text-sm font-medium text-gray-600 mb-2">TP Premium:</label>
+                            <input type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition" id="tpPremium" value="0" placeholder="e.g., 2000">
+                        </div>
+                        <div>
+                            <label for="tpCommissionRate" class="block text-sm font-medium text-gray-600 mb-2">TP Commission Rate (%):</label>
+                            <input type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition" id="tpCommissionRate" value="0" placeholder="e.g., 5">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="tdsRate" class="block text-sm font-medium text-gray-600 mb-2">TDS Rate (%):</label>
+                        <input type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition" id="tdsRate" value="2" placeholder="e.g., 2">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Calculate Commission
+                    </button>
+                </form>
+            </div>
+            <div id="cutpay-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Cut Pay Calculator</h2>
+                <p class="text-center text-gray-500 mb-6">Calculate the final payable amount using the provided formula.</p>
+                <form id="cutpay-form" class="space-y-4">
+                    <div>
+                        <label for="cutpay-total-premium" class="block text-sm font-semibold text-gray-700">Total Premium:</label>
+                        <input type="number" id="cutpay-total-premium" placeholder="Enter total premium..." step="0.01" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200">
+                    </div>
+                    <div>
+                        <label for="cutpay-cut-rate" class="block text-sm font-semibold text-gray-700">Cut Rate (%):</label>
+                        <input type="number" id="cutpay-cut-rate" placeholder="Enter cut rate..." step="0.01" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Calculate Final Pay
+                    </button>
+                </form>
+            </div>
+            
+            <div id="vahan-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Vahan Data</h2>
+                <p class="text-center text-gray-500 mb-6">Access key vehicle and claim links instantly.</p>
+                
+                <div class="flex flex-col space-y-4">
+                    <button id="vahanLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Vehicle Details
+                    </button>
+                    <button id="claimLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Claim Details
+                    </button>
+                    <button id="iibLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Insurance Details
+                    </button>
+                </div>
+            </div>
+        </div> </div>
+    
+    <div id="idv-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Calculated IDV</h3>
+                <p id="idv-modal-result" class="text-2xl font-extrabold text-green-600 text-center mb-6"></p>
+                <div class="text-center">
+                    <button id="close-idv-modal" class="px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="depreciation-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Depreciation Results</h3>
+                <div id="depreciation-modal-result" class="space-y-4"></div>
+                <div class="text-center mt-6">
+                    <button id="close-depreciation-modal" class="px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="commission-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Commission Details</h3>
+                <div id="commission-modal-result" class="space-y-4"></div>
+                <div class="text-center mt-6">
+                    <button id="close-commission-modal" class="px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="cutpay-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Cut Pay Result</h3>
+                <p id="cutpay-modal-result" class="text-2xl font-extrabold text-green-600 text-center mb-6"></p>
+                <div class="text-center mt-6">
+                    <button id="close-cutpay-modal" class="px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="tds-warning-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 transform transition-all duration-300 scale-95">
+            <div class="text-center">
+                <svg class="mx-auto h-12 w-12 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 class="mt-2 text-lg font-bold text-gray-900">TDS Rate Warning</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500">The default TDS rate is 2%. Please verify the current government rate before editing this field to ensure accuracy.</p>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-6">
+                <button id="close-tds-warning" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-500 text-base font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:text-sm">
+                    I Understand
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Tab Switching Logic ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            // Function to show a specific tab and update button styling
+            const showTab = (tabId) => {
+                tabContents.forEach(content => content.classList.add('hidden'));
+                tabButtons.forEach(button => {
+                    button.classList.remove('text-indigo-600', 'border-indigo-500');
+                    button.classList.add('text-gray-700', 'border-transparent');
+                });
+                
+                document.getElementById(tabId + '-section').classList.remove('hidden');
+                document.getElementById('tab-' + tabId).classList.add('text-indigo-600', 'border-indigo-500');
+            };
+            // Event listeners for tab buttons
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.id.replace('tab-', '');
+                    showTab(tabId);
+                });
+            });
+            // Set initial active tab on page load
+            showTab('idv');
+            
+            // --- IDV Calculator Logic ---
+            const idvForm = document.getElementById('idv-form');
+            const idvModal = document.getElementById('idv-modal');
+            const idvModalResult = document.getElementById('idv-modal-result');
+            const closeIdvModalBtn = document.getElementById('close-idv-modal');
+            idvForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const initialValue = parseFloat(document.getElementById('initial-value').value);
+                const mfgYear = parseInt(document.getElementById('mfg-year').value);
+                const currentYear = new Date().getFullYear();
+                const depreciationRate = 0.10;
+                if (isNaN(initialValue) || initialValue <= 0) {
+                    alert("Please enter a valid positive value for the vehicle purchase amount.");
+                    return;
+                }
+                if (isNaN(mfgYear) || mfgYear > currentYear) {
+                    alert("Manufacturing year cannot be in the future.");
+                    return;
+                }
+                const yearsElapsed = currentYear - mfgYear;
+                const currentValue = initialValue * Math.pow(1 - depreciationRate, yearsElapsed);
+                
+                idvModalResult.textContent = `₹ ${Math.round(currentValue).toLocaleString('en-IN')}`;
+                idvModal.classList.remove('hidden');
+            });
+            closeIdvModalBtn.addEventListener('click', () => {
+                idvModal.classList.add('hidden');
+            });
+
+            // --- Depreciation Calculator Logic ---
+            const depreciationForm = document.getElementById('depreciation-form');
+            const depreciationModal = document.getElementById('depreciation-modal');
+            const depreciationModalResult = document.getElementById('depreciation-modal-result');
+            const closeDepreciationModalBtn = document.getElementById('close-depreciation-modal');
+            depreciationForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const assetValue = parseFloat(document.getElementById('dep-initial-value').value);
+                if (isNaN(assetValue) || assetValue <= 0) {
+                    alert("Please enter a valid asset value.");
+                    return;
+                }
+                const remaining5 = assetValue * (1 - 0.05);
+                const remaining10 = assetValue * (1 - 0.10);
+                depreciationModalResult.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-white rounded-md border">
+                            <span class="text-gray-600">After 5% Depreciation:</span>
+                            <span class="font-bold text-lg text-emerald-600">₹ ${remaining5.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-white rounded-md border">
+                            <span class="text-gray-600">After 10% Depreciation:</span>
+                            <span class="font-bold text-lg text-emerald-600">₹ ${remaining10.toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+                `;
+                depreciationModal.classList.remove('hidden');
+            });
+            closeDepreciationModalBtn.addEventListener('click', () => {
+                depreciationModal.classList.add('hidden');
+            });
+
+            // --- Commission Calculator Logic ---
+            const commissionForm = document.getElementById('commission-form');
+            const commissionModal = document.getElementById('commission-modal');
+            const commissionModalResult = document.getElementById('commission-modal-result');
+            const closeCommissionModalBtn = document.getElementById('close-commission-modal');
+            commissionForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const odPremium = parseFloat(document.getElementById('odPremium').value) || 0;
+                const odRate = parseFloat(document.getElementById('odCommissionRate').value) || 0;
+                const tpPremium = parseFloat(document.getElementById('tpPremium').value) || 0;
+                const tpRate = parseFloat(document.getElementById('tpCommissionRate').value) || 0;
+                const tdsRate = parseFloat(document.getElementById('tdsRate').value) || 0;
+                
+                if (odPremium < 0 || odRate < 0 || tpPremium < 0 || tpRate < 0 || tdsRate < 0) {
+                    alert("Please enter non-negative values.");
+                    return;
+                }
+                const odCommission = odPremium * (odRate / 100);
+                const tpCommission = tpPremium * (tpRate / 100);
+                const totalCommission = odCommission + tpCommission;
+                const tdsAmount = totalCommission * (tdsRate / 100);    
+                const netCommission = totalCommission - tdsAmount;
+                commissionModalResult.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="text-gray-600">Total Commission</span>
+                            <span class="font-bold text-gray-800">₹ ${totalCommission.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="text-gray-600">TDS Deduction (${tdsRate}%)</span>
+                            <span class="font-bold text-red-500">- ₹ ${tdsAmount.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-300">
+                            <strong class="text-lg text-gray-800">Net Commission Payable</strong>
+                            <strong class="text-2xl text-green-600">₹ ${netCommission.toFixed(2)}</strong>
+                        </div>
+                    </div>
+                `;
+                commissionModal.classList.remove('hidden');
+            });
+            closeCommissionModalBtn.addEventListener('click', () => {
+                commissionModal.classList.add('hidden');
+            });
+            
+            // --- Cut Pay Calculator Logic ---
+            const cutpayForm = document.getElementById('cutpay-form');
+            const cutpayModal = document.getElementById('cutpay-modal');
+            const cutpayModalResult = document.getElementById('cutpay-modal-result');
+            const closeCutpayModalBtn = document.getElementById('close-cutpay-modal');
+            cutpayForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const b = parseFloat(document.getElementById("cutpay-total-premium").value);
+                const d = parseFloat(document.getElementById("cutpay-cut-rate").value);
+                if (isNaN(b) || isNaN(d) || b < 0 || d < 0) {
+                    alert("Please enter valid, non-negative numbers for Total premium and Cut Rate.");
+                    return;
+                }
+                const c = b / 1.18;
+                const e = c * (1 - d / 100);
+                const result = e + (b - c);
+                
+                cutpayModalResult.innerHTML = `₹ ${result.toFixed(2)}`;
+                cutpayModal.classList.remove('hidden');
+            });
+            closeCutpayModalBtn.addEventListener('click', () => {
+                cutpayModal.classList.add('hidden');
+            });
+            // --- Vahan Link Logic ---
+            const links = {
+                vahan: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=vahan",
+                claim: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=claim",
+                iib: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=iib"
+            };
+            const openPopupWindow = (url) => {
+                window.open(url, '_blank', 'width=800,height=600,noopener,noreferrer');
+            };
+            document.getElementById('vahanLink').addEventListener('click', () => openPopupWindow(links.vahan));
+            document.getElementById('claimLink').addEventListener('click', () => openPopupWindow(links.claim));
+            document.getElementById('iibLink').addEventListener('click', () => openPopupWindow(links.iib));
+            // --- New TDS Warning Modal Logic ---
+            let tdsWarningShown = false; // Flag to ensure the warning only shows once per session
+            const tdsRateInput = document.getElementById('tdsRate');
+            const tdsWarningModal = document.getElementById('tds-warning-modal');
+            const closeTdsWarningBtn = document.getElementById('close-tds-warning');
+            // Show the modal when the TDS input field is focused for the first time
+            tdsRateInput.addEventListener('focus', () => {
+                if (!tdsWarningShown) {
+                    tdsWarningModal.classList.remove('hidden');
+                    tdsWarningModal.querySelector('.scale-95').classList.add('scale-100');
+                    tdsWarningShown = true;
+                }
+            });
+            // Hide the modal when the "I Understand" button is clicked
+            closeTdsWarningBtn.addEventListener('click', () => {
+                tdsWarningModal.classList.add('hidden');
+                tdsWarningModal.querySelector('.scale-100').classList.remove('scale-100');
+            });
+        });
+    </script>
+</body>
+</html>
