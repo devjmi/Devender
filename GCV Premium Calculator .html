@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCV Premium Calculator</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas library to capture HTML as image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 20px;
+            height: 20px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message-box {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 90%;
+            max-width: 400px;
+        }
+        /* --- Print-specific styles --- */
+        @media print {
+            body {
+                background-color: white !important;
+                margin: 0;
+                padding: 0;
+            }
+            #calculatorContainer, #commissionModal, #messageBox {
+                display: none;
+            }
+            #pdfContent {
+                display: block !important;
+                font-family: 'serif';
+                color: black;
+                font-size: 14px;
+                padding: 20px;
+            }
+            #pdfContent h1 {
+                text-align: center;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            #pdfContent .section-title {
+                font-weight: bold;
+                font-size: 16px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+                border-bottom: 1px solid #ccc;
+            }
+            #pdfContent .row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 5px;
+            }
+            #pdfContent .row-total {
+                font-weight: bold;
+                font-size: 18px;
+                color: #0d3466;
+            }
+            .total-premium-row {
+                padding-top: 10px;
+                border-top: 2px solid #0d3466;
+            }
+            /* Highlight styles for discounts */
+            .highlight-discount {
+                color: #e53e3e;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-2">
+    <!-- Calculator Container -->
+    <div id="calculatorContainer" class="bg-white p-4 rounded-lg shadow-lg w-full max-w-sm md:max-w-md z-10 relative">
+        
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 class="text-lg font-extrabold text-blue-800 mb-1">Goods Carriage Vehicle Premium Calculator</h1>
+        </div>
+        <!-- Input Form -->
+        <form id="premiumForm" class="space-y-3">
+            <!-- GCV Type Selector -->
+            <div>
+                <label for="gcvType" class="block text-sm font-medium text-gray-700">GCV Type</label>
+                <select id="gcvType" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                    <option value="gcvPublicCarrier">GCV Public Carrier</option>
+                    <option value="gcv3wPublicCarrier">GCV 3W-Public Carrier</option>
+                </select>
+            </div>
+            
+            <!-- Zone Options - Changed to radio buttons -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Zone</label>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="flex items-center">
+                        <input type="radio" id="zoneA" name="zone" value="ZONE A" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="zoneA" class="ml-2 text-sm text-gray-700">Zone A</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="zoneB" name="zone" value="ZONE B" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="zoneB" class="ml-2 text-sm text-gray-700">Zone B</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="zoneC" name="zone" value="ZONE C" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
+                        <label for="zoneC" class="ml-2 text-sm text-gray-700">Zone C</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- IDV -->
+            <div>
+                <label for="idv" class="block text-sm font-medium text-gray-700">Insured Declared Value (IDV) in ₹</label>
+                <input type="number" id="idv" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 500000" required>
+            </div>
+            <!-- GVW & MFG Year on one line -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- GVW -->
+                <div>
+                    <label for="carryingCapacity" class="block text-sm font-medium text-gray-700">GVW (in kg)</label>
+                    <input type="number" id="carryingCapacity" min="500" step="1" value="2990" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 5000" required>
+                </div>
+                <!-- MFG Year -->
+                <div>
+                    <label for="vehicleAge" class="block text-sm font-medium text-gray-700">MFG Year</label>
+                    <select id="vehicleAge" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                        <option value="2019">2019</option>
+                        <option value="2018">2018</option>
+                        <option value="2017">2017</option>
+                        <option value="2016">2016</option>
+                        <option value="2015">2015</option>
+                        <option value="2014">2014</option>
+                        <option value="2013">2013</option>
+                        <option value="2012">2012</option>
+                        <option value="2011">2011</option>
+                        <option value="2010">2010</option>
+                        <option value="2009">2009</option>
+                        <option value="2008">2008</option>
+                        <option value="2007">2007</option>
+                        <option value="2006">2006</option>
+                        <option value="2005">2005</option>
+                        <option value="2004">2004</option>
+                        <option value="2003">2003</option>
+                        <option value="2002">2002</option>
+                        <option value="2001">2001</option>
+                        <option value="2000">2000</option>
+                        <option value="1999">1999</option>
+                        <option value="1998">1998</option>
+                        <option value="1997">1997</option>
+                        <option value="1996">1996</option>
+                        <option value="1995">1995</option>
+                        <option value="1994">1994</option>
+                        <option value="1993">1993</option>
+                        <option value="1992">1992</option>
+                        <option value="1991">1991</option>
+                        <option value="1990">1990</option>
+                    </select>
+                </div>
+            </div>
+            <!-- NCB & OD Discount Row -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- NCB Percentage -->
+                <div>
+                    <label for="ncb" class="block text-sm font-medium text-gray-700">No Claim Bonus (NCB) %</label>
+                    <select id="ncb" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                        <option value="0">0%</option>
+                        <option value="20">20%</option>
+                        <option value="25">25%</option>
+                        <option value="35">35%</option>
+                        <option value="45">45%</option>
+                        <option value="50">50%</option>
+                    </select>
+                </div>
+                <!-- OD Discount -->
+                <div>
+                    <label for="odDiscount" class="block text-sm font-medium text-gray-700">OD Discount %</label>
+                    <input type="number" id="odDiscount" min="0" max="100" step="0.1" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 99" value="0" required>
+                </div>
+            </div>
+            
+            <!-- Additional Options Row - Updated to include all covers -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Additional Covers</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Depreciation -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="depreciation" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="depreciation" class="ml-2 text-sm text-gray-700">Depreciation</label>
+                    </div>
+                    <!-- Depreciation Rate -->
+                    <div class="flex items-center">
+                        <input type="number" id="depreciationRate" min="0" max="100" step="0.1" class="w-20 p-1 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Rate %" value="0.5" disabled>
+                        <span class="ml-1 text-sm text-gray-600">%</span>
+                    </div>
+                    <!-- RSA -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="rsa" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="rsa" class="ml-2 text-sm text-gray-700">RSA</label>
+                    </div>
+                    <!-- IMT 23 -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="imt23" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                        <label for="imt23" class="ml-2 text-sm text-gray-700">IMT 23</label>
+                    </div>
+                    <!-- CNG Kit -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="cng" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="cng" class="ml-2 text-sm text-gray-700">CNG Kit</label>
+                    </div>
+                </div>
+                
+                <!-- PA Cover with dropdown -->
+                <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pa" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                        <label for="pa" class="ml-2 text-sm text-gray-700">PA Cover</label>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm mr-1">₹</span>
+                        <select id="paValue" class="w-24 p-1 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="225">225</option>
+                            <option value="250">250</option>
+                            <option value="275" selected>275</option>
+                            <option value="325">325</option>
+                            <option value="375">375</option>
+                            <option value="425">425</option>
+                            <option value="450">450</option>
+                            <option value="475">475</option>
+                            <option value="525">525</option>
+                            <option value="550">550</option>
+                            <option value="575">575</option>
+                            <option value="600">600</option>
+                            <option value="625">625</option>
+                            <option value="650">650</option>
+                            <option value="675">675</option>
+                            <option value="750">750</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- LL Cover with dropdown -->
+                <div class="mt-2">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="ll" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                            <label for="ll" class="ml-2 text-sm text-gray-700">LL Cover</label>
+                        </div>
+                        <div class="flex items-center">
+                            <select id="llValue" class="w-24 p-1 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calculate Button -->
+            <div class="mt-4">
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    Calculate Premium
+                </button>
+            </div>
+        </form>
+        
+        <!-- Results Section (hidden by default) -->
+        <div id="results" class="mt-4 hidden">
+            <h2 class="text-lg font-bold text-gray-800 mb-2">Calculation Results</h2>
+            <div id="resultsContent" class="bg-gray-50 p-3 rounded-md">
+                <!-- Results will be inserted here by JavaScript -->
+            </div>
+            <!-- PDF Button (hidden by default) -->
+            <div class="mt-3">
+                <button id="generatePdfBtn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Generate PDF
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Enable/disable PA and LL input fields based on checkbox state
+        document.getElementById('pa').addEventListener('change', function() {
+            document.getElementById('paValue').disabled = !this.checked;
+            if (this.checked) {
+                document.getElementById('paValue').focus();
+            }
+        });
+        
+        document.getElementById('ll').addEventListener('change', function() {
+            document.getElementById('llValue').disabled = !this.checked;
+            if (this.checked) {
+                document.getElementById('llValue').focus();
+            }
+        });
+        
+        // Enable/disable depreciation rate input based on checkbox state
+        document.getElementById('depreciation').addEventListener('change', function() {
+            document.getElementById('depreciationRate').disabled = !this.checked;
+            if (this.checked) {
+                document.getElementById('depreciationRate').focus();
+            }
+        });
+        
+        document.getElementById('premiumForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const gcvType = document.getElementById('gcvType').value;
+            const zone = document.querySelector('input[name="zone"]:checked').value;
+            const idv = parseFloat(document.getElementById('idv').value);
+            const carryingCapacity = parseFloat(document.getElementById('carryingCapacity').value);
+            const vehicleAge = parseInt(document.getElementById('vehicleAge').value);
+            const ncb = parseFloat(document.getElementById('ncb').value);
+            const odDiscount = parseFloat(document.getElementById('odDiscount').value);
+            
+            // Check additional options
+            const depreciation = document.getElementById('depreciation').checked;
+            const depreciationRate = depreciation ? parseFloat(document.getElementById('depreciationRate').value) : 0;
+            const rsa = document.getElementById('rsa').checked;
+            const imt23 = document.getElementById('imt23').checked;
+            const cng = document.getElementById('cng').checked;
+            const pa = document.getElementById('pa').checked;
+            const ll = document.getElementById('ll').checked;
+            
+            // Get PA Cover cover amounts
+            const paValue = pa ? parseFloat(document.getElementById('paValue').value) : 0;
+            const llValue = ll ? parseFloat(document.getElementById('llValue').value) : 0;
+            
+            // Calculate OD rate based on zone and manufacturing year
+            let odRate;
+            if (gcvType === 'gcvPublicCarrier') {
+                if (zone === "ZONE A") {
+                    if (vehicleAge >= 2021) {
+                        odRate = 0.01751;
+                    } else if (vehicleAge >= 2018) {
+                        odRate = 0.01795;
+                    } else if (vehicleAge >= 2010) {
+                        odRate = 0.01839;
+                    } else {
+                        odRate = 0.01839;
+                    }
+                } else if (zone === "ZONE B") {
+                    if (vehicleAge >= 2021) {
+                        odRate = 0.01743;
+                    } else if (vehicleAge >= 2018) {
+                        odRate = 0.01787;
+                    } else if (vehicleAge >= 2010) {
+                        odRate = 0.01830;
+                    } else {
+                        odRate = 0.01830;
+                    }
+                } else if (zone === "ZONE C") {
+                    if (vehicleAge >= 2021) {
+                        odRate = 0.01726;
+                    } else if (vehicleAge >= 2018) {
+                        odRate = 0.01770;
+                    } else if (vehicleAge >= 2010) {
+                        odRate = 0.01812;
+                    } else {
+                        odRate = 0.01812;
+                    }
+                }
+            } else {
+                // For GCV 3W-Public Carrier - using simplified rates
+                if (zone === "ZONE A") {
+                    odRate = 0.015;
+                } else if (zone === "ZONE B") {
+                    odRate = 0.0145;
+                } else {
+                    odRate = 0.014;
+                }
+            }
+            
+            // Calculate base OD Premium
+            let baseOdPremium = idv * odRate;
+            
+            // Calculate additional OD charge for GVW > 12000 kg
+            let additionalOdCharge = 0;
+            if (carryingCapacity > 12000) {
+                const excessWeight = carryingCapacity - 12000;
+                additionalOdCharge = excessWeight * 0.27;
+            }
+            
+            // Total OD Premium before any discounts
+            let totalOdPremiumBeforeDiscounts = baseOdPremium + additionalOdCharge;
+            
+            // Calculate TP Premium based on GCV type
+            let tpPremium;
+            if (gcvType === 'gcv3wPublicCarrier') {
+                // Fixed TP premium for GCV 3W-Public Carrier
+                tpPremium = 4492;
+            } else {
+                // GVW-based calculation for GCV Public Carrier
+                if (carryingCapacity <= 7500) {
+                    tpPremium = 16049;
+                } else if (carryingCapacity <= 12000) {
+                    tpPremium = 27186;
+                } else if (carryingCapacity <= 20000) {
+                    tpPremium = 35313;
+                } else if (carryingCapacity <= 40000) {
+                    tpPremium = 43950;
+                } else {
+                    tpPremium = 44442;
+                }
+            }
+            
+            // Calculate additional covers cost (not eligible for OD discount)
+            let additionalCoversCost = 0;
+            if (depreciation) additionalCoversCost += (depreciationRate / 100) * idv;
+            if (rsa) additionalCoversCost += 350;
+            
+            // Calculate covers eligible for OD discount
+            let imt23Cost = 0;
+            let cngCost = 0;
+            let paCost = 0;
+            let llCost = 0;
+            
+            // Calculate IMT 23 cost: 15% of base OD premium
+            if (imt23) {
+                imt23Cost = baseOdPremium * 0.15; // 15% of base OD premium
+            }
+            
+            if (cng) cngCost = 5000; // Fixed cost for CNG kit
+            if (pa) paCost = paValue; // User-defined PA cover cost
+            
+            // Calculate LL Cover cost: 50 per person
+            if (ll) {
+                llCost = llValue * 50; // 50 rupees per person
+            }
+            
+            // Calculate total amount eligible for OD discount (OD + IMT23 + CNG)
+            // PA and LL covers are excluded from OD discount
+            const totalForOdDiscount = totalOdPremiumBeforeDiscounts + imt23Cost + cngCost;
+            
+            // Apply OD Discount to the total eligible amount
+            const totalAfterOdDiscount = totalForOdDiscount * (1 - odDiscount/100);
+            
+            // Calculate the OD discount amount
+            const odDiscountAmount = totalForOdDiscount - totalAfterOdDiscount;
+            
+            // Calculate OD portion after OD discount
+            const odAfterOdDiscount = totalOdPremiumBeforeDiscounts * (1 - odDiscount/100);
+            
+            // Calculate non-OD portion after OD discount (IMT23 and CNG)
+            const nonOdAfterOdDiscount = totalAfterOdDiscount - odAfterOdDiscount;
+            
+            // Apply NCB discount to the amount after OD discount
+            const ncbDiscountAmount = totalAfterOdDiscount * (ncb/100);
+            const totalAfterNcb = totalAfterOdDiscount - ncbDiscountAmount;
+            
+            // Calculate OD portion after NCB
+            const odAfterNcb = odAfterOdDiscount - (odAfterOdDiscount * (ncb/100));
+            
+            // Calculate non-OD portion after NCB (IMT23 and CNG)
+            const nonOdAfterNcb = nonOdAfterOdDiscount - (nonOdAfterOdDiscount * (ncb/100));
+            
+            // Add PA and LL covers without discount
+            const totalWithPaLl = totalAfterNcb + paCost + llCost;
+            
+            // Calculate GST
+            const tpGst = tpPremium * 0.12; // 12% GST on TP Premium
+            const nonTpPortion = totalWithPaLl + additionalCoversCost;
+            const nonTpGst = nonTpPortion * 0.18; // 18% GST on non-TP portion
+            
+            // Calculate total premium including GST
+            const totalPremium = totalWithPaLl + tpPremium + additionalCoversCost + tpGst + nonTpGst;
+            
+            // Calculate total premium without GST
+            const totalPremiumWithoutGst = totalWithPaLl + tpPremium + additionalCoversCost;
+            
+            // Store calculation data for PDF generation
+            window.premiumData = {
+                gcvType: gcvType === 'gcvPublicCarrier' ? 'GCV Public Carrier' : 'GCV 3W-Public Carrier',
+                zone: zone,
+                idv: idv,
+                carryingCapacity: carryingCapacity,
+                vehicleAge: vehicleAge,
+                ncb: ncb,
+                odDiscount: odDiscount,
+                depreciation: depreciation,
+                depreciationRate: depreciationRate,
+                rsa: rsa,
+                imt23: imt23,
+                cng: cng,
+                pa: pa,
+                ll: ll,
+                paValue: paValue,
+                llValue: llValue,
+                baseOdPremium: baseOdPremium,
+                additionalOdCharge: additionalOdCharge,
+                imt23Cost: imt23Cost,
+                cngCost: cngCost,
+                totalForOdDiscount: totalForOdDiscount,
+                odDiscountAmount: odDiscountAmount,
+                totalAfterOdDiscount: totalAfterOdDiscount,
+                ncbDiscountAmount: ncbDiscountAmount,
+                totalAfterNcb: totalAfterNcb,
+                paCost: paCost,
+                llCost: llCost,
+                depreciationCost: depreciation ? (depreciationRate / 100) * idv : 0,
+                rsaCost: rsa ? 350 : 0,
+                tpPremium: tpPremium,
+                tpGst: tpGst,
+                nonTpGst: nonTpGst,
+                totalPremiumWithoutGst: totalPremiumWithoutGst,
+                totalPremium: totalPremium
+            };
+            
+            // Display results
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.innerHTML = `
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-sm font-medium">IDV:</span>
+                        <span class="text-sm">₹${idv.toLocaleString('en-IN', {maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm font-medium">Base OD Premium:</span>
+                        <span class="text-sm">₹${baseOdPremium.toFixed(2)}</span>
+                    </div>
+                    ${additionalOdCharge > 0 ? `<div class="flex justify-between"><span class="text-sm font-medium">Additional OD Charge (>12000kg):</span><span class="text-sm">₹${additionalOdCharge.toFixed(2)}</span></div>` : ''}
+                    ${imt23 ? `<div class="flex justify-between"><span class="text-sm font-medium">IMT 23 Cover:</span><span class="text-sm">₹${imt23Cost.toFixed(2)}</span></div>` : ''}
+                    ${cng ? '<div class="flex justify-between"><span class="text-sm font-medium">CNG Kit:</span><span class="text-sm">₹5,000.00</span></div>' : ''}
+                    <div class="flex justify-between">
+                        <span class="text-sm font-medium">Total for OD Discount:</span>
+                        <span class="text-sm">₹${totalForOdDiscount.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between highlight-discount">
+                        <span class="text-sm font-medium">OD Discount (${odDiscount}%):</span>
+                        <span class="text-sm">-₹${odDiscountAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm font-medium">Amount after OD Discount:</span>
+                        <span class="text-sm">₹${totalAfterOdDiscount.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between highlight-discount">
+                        <span class="text-sm font-medium">NCB Discount (${ncb}%):</span>
+                        <span class="text-sm">-₹${ncbDiscountAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm font-medium">Amount after NCB:</span>
+                        <span class="text-sm">₹${totalAfterNcb.toFixed(2)}</span>
+                    </div>
+                    ${pa ? `<div class="flex justify-between"><span class="text-sm font-medium">PA Cover:</span><span class="text-sm">₹${paValue.toFixed(2)}</span></div>` : ''}
+                    ${ll ? `<div class="flex justify-between"><span class="text-sm font-medium">LL Cover (${llValue} persons):</span><span class="text-sm">₹${llCost.toFixed(2)}</span></div>` : ''}
+                    ${depreciation ? `<div class="flex justify-between"><span class="text-sm font-medium">Depreciation Cover (${depreciationRate}% of IDV):</span><span class="text-sm">₹${((depreciationRate / 100) * idv).toFixed(2)}</span></div>` : ''}
+                    ${rsa ? '<div class="flex justify-between"><span class="text-sm font-medium">RSA Cover:</span><span class="text-sm">₹350.00</span></div>' : ''}
+                    <div class="flex justify-between">
+                        <span class="text-sm font-medium">TP Premium:</span>
+                        <span class="text-sm">₹${tpPremium.toFixed(2)}</span>
+                    </div>
+                    <div class="border-t border-gray-300 pt-2 mt-2">
+                        <div class="flex justify-between font-semibold">
+                            <span>Total Premium (without GST):</span>
+                            <span class="text-blue-700">₹${totalPremiumWithoutGst.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between mt-1">
+                            <span class="text-sm font-medium">GST on TP (12%):</span>
+                            <span class="text-sm">₹${tpGst.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium">GST on OD & Add-ons (18%):</span>
+                            <span class="text-sm">₹${nonTpGst.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between font-bold">
+                            <span>Total Premium (incl. GST):</span>
+                            <span class="text-blue-700">₹${totalPremium.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show results and PDF button
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('generatePdfBtn').classList.remove('hidden');
+        });
+        
+        // PDF generation functionality with single page format
+        document.getElementById('generatePdfBtn').addEventListener('click', function() {
+            // Create a new jsPDF instance
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Get the calculation data
+            const data = window.premiumData;
+            
+            // Set font to a clearer one
+            doc.setFont('helvetica');
+            
+            // Helper function to clean text from special characters
+            const cleanText = (text) => {
+                return text.toString()
+                    .replace(/[¹²³⁴⁵⁶⁷⁸⁹⁰]/g, '') // Remove superscript numbers
+                    .replace(/[\u0080-\uFFFF]/g, '') // Remove other special characters
+                    .trim();
+            };
+            
+            // Helper function to format currency
+            const formatCurrency = (value) => {
+                return '₹' + parseFloat(value).toFixed(2);
+            };
+            
+            // Add title
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText('Goods Carriage Vehicle Premium Calculation'), 105, 15, { align: 'center' });
+            
+            // Add date and reference number
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            const date = new Date().toLocaleDateString();
+            const refNo = 'GCV/' + new Date().getFullYear() + '/' + Math.floor(Math.random() * 10000);
+            doc.text(cleanText(`Date: ${date}`), 20, 25);
+            doc.text(cleanText(`Ref No: ${refNo}`), 150, 25);
+            
+            // Add a line separator
+            doc.setLineWidth(0.3);
+            doc.line(20, 30, 190, 30);
+            
+            // Vehicle Details Section
+            let yPos = 38;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText('Vehicle Details'), 20, yPos);
+            
+            yPos += 7;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            
+            // Create a table for vehicle details
+            doc.text(cleanText('GCV Type:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(data.gcvType), 60, yPos);
+            
+            yPos += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('Zone:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(data.zone), 60, yPos);
+            
+            yPos += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('IDV:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.idv)), 60, yPos);
+            
+            yPos += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('GVW:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(data.carryingCapacity + ' kg'), 60, yPos);
+            
+            yPos += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('MFG Year:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(data.vehicleAge.toString()), 60, yPos);
+            
+            // Add a line separator
+            yPos += 8;
+            doc.setLineWidth(0.3);
+            doc.line(20, yPos, 190, yPos);
+            
+            // Premium Calculation Section
+            yPos += 5;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText('Premium Calculation'), 20, yPos);
+            
+            yPos += 7;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            
+            // Base OD Premium
+            doc.text(cleanText('Base OD Premium:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.baseOdPremium)), 150, yPos, { align: 'right' });
+            
+            // Additional OD Charge (if applicable)
+            if (data.additionalOdCharge > 0) {
+                yPos += 5;
+                doc.setFont('helvetica', 'normal');
+                doc.text(cleanText('Additional OD Charge (>12000kg):'), 20, yPos);
+                doc.setFont('helvetica', 'bold');
+                doc.text(cleanText(formatCurrency(data.additionalOdCharge)), 150, yPos, { align: 'right' });
+            }
+            
+            // IMT 23 Cover (if applicable)
+            if (data.imt23) {
+                yPos += 5;
+                doc.setFont('helvetica', 'normal');
+                doc.text(cleanText('IMT 23 Cover:'), 20, yPos);
+                doc.setFont('helvetica', 'bold');
+                doc.text(cleanText(formatCurrency(data.imt23Cost)), 150, yPos, { align: 'right' });
+            }
+            
+            // CNG Kit (if applicable)
+            if (data.cng) {
+                yPos += 5;
+                doc.setFont('helvetica', 'normal');
+                doc.text(cleanText('CNG Kit:'), 20, yPos);
+                doc.setFont('helvetica', 'bold');
+                doc.text(cleanText('₹5,000.00'), 150, yPos, { align: 'right' });
+            }
+            
+            // Total for OD Discount
+            yPos += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('Total for OD Discount:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.totalForOdDiscount)), 150, yPos, { align: 'right' });
+            
+            // OD Discount
+            yPos += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText(`OD Discount (${data.odDiscount}%):`), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(229, 62, 62); // Red color for discount
+            doc.text(cleanText('-' + formatCurrency(data.odDiscountAmount)), 150, yPos, { align: 'right' });
+            
+            // Amount after OD Discount
+            yPos += 5;
+            doc.setTextColor(0, 0, 0); // Reset to black
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('Amount after OD Discount:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.totalAfterOdDiscount)), 150, yPos, { align: 'right' });
+            
+            // NCB Discount
+            yPos += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText(`NCB Discount (${data.ncb}%):`), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(229, 62, 62); // Red color for discount
+            doc.text(cleanText('-' + formatCurrency(data.ncbDiscountAmount)), 150, yPos, { align: 'right' });
+            
+            // Amount after NCB
+            yPos += 5;
+            doc.setTextColor(0, 0, 0); // Reset to black
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('Amount after NCB:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.totalAfterNcb)), 150, yPos, { align: 'right' });
+            
+            // Add a line separator
+            yPos += 8;
+            doc.setLineWidth(0.3);
+            doc.line(20, yPos, 190, yPos);
+            
+            // Additional Covers Section
+            yPos += 5;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText('Additional Covers'), 20, yPos);
+            
+            yPos += 7;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            
+            // PA Cover (if applicable)
+            if (data.pa) {
+                doc.text(cleanText('PA Cover:'), 20, yPos);
+                doc.setFont('helvetica', 'bold');
+                doc.text(cleanText(formatCurrency(data.paValue)), 150, yPos, { align: 'right' });
+                yPos += 5;
+            }
+            
+            // LL Cover (if applicable)
+            if (data.ll) {
+                doc.setFont('helvetica', 'normal');
+                doc.text(cleanText(`LL Cover (${data.llValue} persons):`), 20, yPos);
+                doc.setFont('helvetica', 'bold');
+                doc.text(cleanText(formatCurrency(data.llCost)), 150, yPos, { align: 'right' });
+                yPos += 5;
+            }
+            
+            // Depreciation Cover (if applicable)
+            if (data.depreciation) {
+                doc.setFont('helvetica', 'normal');
+                doc.text(cleanText(`Depreciation Cover (${data.depreciationRate}% of IDV):`), 20, yPos);
+                doc.setFont('helvetica', 'bold');
+                doc.text(cleanText(formatCurrency(data.depreciationCost)), 150, yPos, { align: 'right' });
+                yPos += 5;
+            }
+            
+            // RSA Cover (if applicable)
+            if (data.rsa) {
+                doc.setFont('helvetica', 'normal');
+                doc.text(cleanText('RSA Cover:'), 20, yPos);
+                doc.setFont('helvetica', 'bold');
+                doc.text(cleanText('₹350.00'), 150, yPos, { align: 'right' });
+                yPos += 5;
+            }
+            
+            // TP Premium
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('TP Premium:'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.tpPremium)), 150, yPos, { align: 'right' });
+            
+            // Add a line separator
+            yPos += 8;
+            doc.setLineWidth(0.3);
+            doc.line(20, yPos, 190, yPos);
+            
+            // Total Premium Section
+            yPos += 5;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText('Total Premium'), 20, yPos);
+            
+            yPos += 7;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            
+            // Total Premium without GST
+            doc.text(cleanText('Total Premium (without GST):'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.totalPremiumWithoutGst)), 150, yPos, { align: 'right' });
+            
+            // GST on TP
+            yPos += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('GST on TP (12%):'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.tpGst)), 150, yPos, { align: 'right' });
+            
+            // GST on OD & Add-ons
+            yPos += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(cleanText('GST on OD & Add-ons (18%):'), 20, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText(formatCurrency(data.nonTpGst)), 150, yPos, { align: 'right' });
+            
+            // Add a double line separator
+            yPos += 7;
+            doc.setLineWidth(0.5);
+            doc.line(20, yPos, 190, yPos);
+            
+            // Total Premium with GST
+            yPos += 7;
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(cleanText('Total Premium (incl. GST):'), 20, yPos);
+            doc.setTextColor(13, 52, 102); // Dark blue color for total
+            doc.text(cleanText(formatCurrency(data.totalPremium)), 150, yPos, { align: 'right' });
+            
+            // Add footer
+            yPos += 15;
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'italic');
+            doc.text(cleanText('This is a computer-generated document and does not require a signature.'), 105, yPos, { align: 'center' });
+            
+            // Save the PDF
+            doc.save('GCV_Premium_Calculation.pdf');
+        });
+    </script>
+</body>
+</html>
