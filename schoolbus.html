@@ -35,20 +35,16 @@
             width: 90%;
             max-width: 400px;
         }
-
         /* --- Print-specific styles --- */
-        /* This media query ensures the print styles are only active when the user prints */
         @media print {
             body {
                 background-color: white !important;
                 margin: 0;
                 padding: 0;
             }
-            /* Hide all interactive elements and controls */
             #calculatorContainer, #commissionModal, #messageBox {
                 display: none;
             }
-            /* Show the content that is meant for the PDF */
             #pdfContent {
                 display: block !important;
                 font-family: 'serif';
@@ -56,7 +52,6 @@
                 font-size: 14px;
                 padding: 20px;
             }
-            /* Ensure headings and totals have consistent styling */
             #pdfContent h1 {
                 text-align: center;
                 font-size: 24px;
@@ -87,7 +82,6 @@
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-2">
-
     <!-- Calculator Container -->
     <div id="calculatorContainer" class="bg-white p-4 rounded-lg shadow-lg w-full max-w-sm md:max-w-md z-10 relative">
         
@@ -95,16 +89,13 @@
         <div class="text-center mb-4">
             <h1 class="text-lg font-extrabold text-blue-800 mb-1">School Bus Premium and Commission Calculator</h1>
         </div>
-
         <!-- Input Form -->
         <form id="premiumForm" class="space-y-3">
-
             <!-- IDV -->
             <div>
                 <label for="idv" class="block text-sm font-medium text-gray-700">Insured Declared Value (IDV) in ₹</label>
                 <input type="number" id="idv" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 500000" required>
             </div>
-
             <!-- Seating Capacity & Carrying Capacity on one line -->
             <div class="grid grid-cols-2 gap-3">
                 <!-- Seating Capacity -->
@@ -118,7 +109,6 @@
                     <input type="text" id="carryingCapacity" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm bg-gray-200 cursor-not-allowed" value="N/A" readonly>
                 </div>
             </div>
-
             <!-- NCB & Discount Row -->
             <div class="grid grid-cols-2 gap-3">
                 <!-- NCB Percentage -->
@@ -159,13 +149,11 @@
                     <input type="number" id="llDriver" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="e.g., 1">
                 </div>
             </div>
-
             <!-- Calculate Button -->
             <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-md text-base hover:bg-blue-700 transition-colors">
                 Calculate
             </button>
         </form>
-
         <!-- Results Section -->
         <div id="results" class="mt-4 hidden">
             <h2 class="text-base font-bold text-gray-800 mb-2">Premium Breakdown</h2>
@@ -204,6 +192,10 @@
                 </div>
                 <hr class="border-t border-gray-300">
                 <div class="flex justify-between items-center text-gray-600 font-semibold text-gray-800">
+                    <span>No Claim Bonus (NCB)</span>
+                    <span id="ncbResult" class="font-semibold text-gray-800"></span>
+                </div>
+                <div class="flex justify-between items-center text-gray-600 font-semibold text-gray-800">
                     <span>Subtotal Premium (before GST)</span>
                     <span id="subtotalPremium" class="font-semibold text-gray-800"></span>
                 </div>
@@ -223,7 +215,6 @@
                 <span>Commission Breakdown</span>
                 <span id="commissionToggleIcon">▶</span>
             </button>
-
             <!-- Generate PDF Button -->
             <button id="generatePdfBtn" class="w-full mt-2 bg-purple-600 text-white font-bold py-2 rounded-md text-base hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2">
                 <span id="generatePdfText">Generate PDF</span>
@@ -250,7 +241,6 @@
                 <label for="commissionRate" class="block text-base font-medium text-gray-700">Commission Rate %</label>
                 <input type="number" id="commissionRate" value="75" min="0" max="100" class="mt-1 p-2 border border-gray-300 rounded-md w-full text-base focus:ring-green-500 focus:border-green-500 transition-colors" required>
             </div>
-
             <!-- Commission Results Section -->
             <div id="commissionSection" class="space-y-2 p-3 bg-gray-100 rounded-md border border-gray-300 text-sm">
                 <!-- New line to show the premium amount the commission is based on -->
@@ -282,13 +272,13 @@
             <button id="closeMessageBoxBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded-md hover:bg-blue-700 transition-colors">OK</button>
         </div>
     </div>
-
     <!-- PDF Content Area (Hidden by default) -->
     <div id="pdfContent" class="hidden">
         <h1>Premium Breakdown</h1>
         <div class="text-sm my-4">
             <p><strong>Insured Declared Value (IDV):</strong> <span id="pdf-idv"></span></p>
             <p><strong>Seating Capacity:</strong> <span id="pdf-seating-capacity"></span></p>
+            <p><strong>No Claim Bonus (NCB):</strong> <span id="pdf-ncb-result"></span></p>
         </div>
         
         <div class="section-title">Own Damage Premium</div>
@@ -353,19 +343,15 @@
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
             const closeMessageBoxBtn = document.getElementById('closeMessageBoxBtn');
-
             // Global variable to store calculated data for both display and PDF
             let calculatedData = {};
-
             function showMessage(text) {
                 messageText.textContent = text;
                 messageBox.classList.remove('hidden');
             }
-
             closeMessageBoxBtn.addEventListener('click', () => {
                 messageBox.classList.add('hidden');
             });
-
             const calculateAndDisplayPremium = () => {
                 const idv = parseFloat(document.getElementById('idv').value);
                 const seatingCapacity = parseInt(seatingCapacityInput.value);
@@ -380,17 +366,14 @@
                 const selectedCompany = document.getElementById('companyDiscount').value;
                 const isCngFuel = document.getElementById('cngFuel').checked;
                 const llDriverValue = parseFloat(document.getElementById('llDriver').value) || 0;
-
                 carryingCapacityDisplay.value = licensedPassengers;
                 
                 if (!idv || !seatingCapacity) {
                     resultsSection.classList.add('hidden');
                     return;
                 }
-
                 const odRate = 1.739;
                 const basicOdPremium = idv * (odRate / 100);
-
                 let loadingPremium;
                 if (seatingCapacity <= 19) {
                     loadingPremium = 350;
@@ -410,7 +393,6 @@
                 
                 const imt23Rate = 0.15;
                 const imt23PremiumBeforeDiscount = odPremiumAfterNcb * imt23Rate;
-
                 let discountRate = 0;
                 let discountLabelText = 'Company Discount';
                 let towingCharge = 0;
@@ -430,13 +412,10 @@
                     discountLabelText = 'ICICI Lombard Discount (99%)';
                     towingCharge = 0;
                 }
-
                 const odPremiumAfterCompanyDiscount = odPremiumAfterNcb * (1 - discountRate);
                 const imt23PremiumAfterCompanyDiscount = imt23PremiumBeforeDiscount * (1 - discountRate);
                 const cngOdPremiumAfterDiscount = isCngFuel ? cngOdPremium * (1 - discountRate) : 0;
-
                 const companyDiscountAmount = (odPremiumAfterNcb + imt23PremiumBeforeDiscount + cngOdPremium) * discountRate;
-
                 const basicTpPremium = 12192;
                 const licensedPassengerPremium = licensedPassengers * 745;
                 const totalTpPremium = basicTpPremium + licensedPassengerPremium;
@@ -448,7 +427,6 @@
                 
                 const gstAmount = totalPremiumBeforeGst * 0.18;
                 const finalTotalPremiumWithGst = totalPremiumBeforeGst + gstAmount;
-
                 // Update the global calculatedData object
                 calculatedData = {
                     idv,
@@ -466,8 +444,8 @@
                     subtotalPremium: totalPremiumBeforeGst,
                     gstAmount,
                     totalPremium: finalTotalPremiumWithGst,
+                    ncbPercentage: ncb
                 };
-
                 // Display all breakdown lines, even if zero
                 document.getElementById('odPremium').textContent = formatCurrency(calculatedData.odPremiumAfterCompanyDiscount);
                 document.getElementById('cngOdPremiumAmount').textContent = formatCurrency(calculatedData.cngOdPremiumAfterDiscount);
@@ -482,10 +460,12 @@
                 document.getElementById('subtotalPremium').textContent = formatCurrency(calculatedData.subtotalPremium);
                 document.getElementById('gstAmount').textContent = formatCurrency(calculatedData.gstAmount);
                 document.getElementById('totalPremium').textContent = formatCurrency(calculatedData.totalPremium);
-
+                
+                // Display NCB percentage
+                document.getElementById('ncbResult').textContent = `${calculatedData.ncbPercentage}%`;
+                
                 resultsSection.classList.remove('hidden');
             };
-
             const calculateAndDisplayCommission = () => {
                 const totalPremiumBeforeGst = calculatedData?.subtotalPremium || 0;
                 const commissionRateInput = parseFloat(document.getElementById('commissionRate').value);
@@ -510,23 +490,19 @@
                 document.getElementById('tdsOnCommission').textContent = formatCurrency(tdsOnCommission);
                 document.getElementById('totalCommission').textContent = formatCurrency(totalCommission);
             };
-
             premiumForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 calculateAndDisplayPremium();
             });
-
             seatingCapacityInput.addEventListener('input', function() {
                 const seatingCapacity = parseInt(this.value);
                 const licensedPassengers = seatingCapacity > 0 ? seatingCapacity - 1 : 0;
                 carryingCapacityDisplay.value = licensedPassengers > 0 ? licensedPassengers : "N/A";
             });
-
             const toggleCommissionBtn = document.getElementById('toggleCommissionBtn');
             const commissionModal = document.getElementById('commissionModal');
             const closeModalBtn = document.getElementById('closeModalBtn');
             const commissionRateInput = document.getElementById('commissionRate');
-
             toggleCommissionBtn.addEventListener('click', function() {
                 if (!Object.keys(calculatedData).length) {
                      showMessage("Please calculate the premium first.");
@@ -535,13 +511,11 @@
                 commissionModal.classList.remove('hidden');
                 calculateAndDisplayCommission();
             });
-
             closeModalBtn.addEventListener('click', function() {
                 commissionModal.classList.add('hidden');
             });
             
             commissionRateInput.addEventListener('input', calculateAndDisplayCommission);
-
             const generatePdfBtn = document.getElementById('generatePdfBtn');
             const generatePdfText = document.getElementById('generatePdfText');
             const generatePdfLoader = document.getElementById('generatePdfLoader');
@@ -556,6 +530,7 @@
                 // Update the PDF content with the calculated data
                 document.getElementById('pdf-idv').textContent = formatCurrency(calculatedData.idv);
                 document.getElementById('pdf-seating-capacity').textContent = calculatedData.seatingCapacity;
+                document.getElementById('pdf-ncb-result').textContent = `${calculatedData.ncbPercentage}%`;
                 document.getElementById('pdf-od-premium').textContent = formatCurrency(calculatedData.odPremiumAfterCompanyDiscount);
                 document.getElementById('pdf-cng-od-premium').textContent = formatCurrency(calculatedData.cngOdPremiumAfterDiscount);
                 document.getElementById('pdf-company-discount-label').textContent = calculatedData.companyDiscountLabel;
@@ -568,7 +543,7 @@
                 document.getElementById('pdf-subtotal-premium').textContent = formatCurrency(calculatedData.subtotalPremium);
                 document.getElementById('pdf-gst-amount').textContent = formatCurrency(calculatedData.gstAmount);
                 document.getElementById('pdf-total-premium').textContent = formatCurrency(calculatedData.totalPremium);
-
+                
                 // Temporarily disable the button and show loading state
                 generatePdfBtn.disabled = true;
                 generatePdfText.textContent = 'Generating...';
@@ -585,7 +560,6 @@
                 }, 500);
             });
         });
-
         // Helper function to format numbers as Indian Rupees
         function formatCurrency(amount, isDiscount = false) {
             const formatter = new Intl.NumberFormat('en-IN', {
@@ -593,7 +567,6 @@
                 currency: 'INR',
                 minimumFractionDigits: 2,
             });
-
             if (isDiscount) {
                 return `- ${formatter.format(amount).replace('₹', '')}`;
             } else {
