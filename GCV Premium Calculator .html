@@ -509,7 +509,7 @@
             const totalWithPaLl = totalAfterNcb + paCost + llCost;
             
             // Calculate GST
-            const tpGst = tpPremium * 0.12; // 12% GST on TP Premium
+            const tpGst = tpPremium * 0.05; // Changed from 0.12 to 0.05 (5% GST on TP Premium)
             const nonTpPortion = totalWithPaLl + additionalCoversCost;
             const nonTpGst = nonTpPortion * 0.18; // 18% GST on non-TP portion
             
@@ -613,7 +613,7 @@
                             <span class="text-blue-700">₹${totalPremiumWithoutGst.toFixed(2)}</span>
                         </div>
                         <div class="flex justify-between mt-2">
-                            <span class="text-sm font-medium">GST TP (12%):</span>
+                            <span class="text-sm font-medium">GST TP (5%):</span>
                             <span class="text-sm">₹${tpGst.toFixed(2)}</span>
                         </div>
                         <div class="flex justify-between">
@@ -909,7 +909,7 @@
             // GST on TP
             yPos += 5;
             doc.setFont('helvetica', 'normal');
-            doc.text(cleanText('GST on TP (12%):'), 20, yPos);
+            doc.text(cleanText('GST on TP (5%):'), 20, yPos);
             doc.setFont('helvetica', 'bold');
             doc.text(cleanText(formatCurrency(data.tpGst)), 150, yPos, { align: 'right' });
             
