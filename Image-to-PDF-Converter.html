@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to PDF Creator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 25px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #5f6368;
+            margin-bottom: 25px;
+        }
+
+        .file-input-label, .action-button {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 10px;
+            border: none;
+        }
+
+        .file-input-label {
+            background-color: #1a73e8;
+            color: #ffffff;
+        }
+
+        .file-input-label:hover {
+            background-color: #185abc;
+            transform: translateY(-2px);
+        }
+
+        #imageInput {
+            display: none;
+        }
+        
+        .action-button {
+            background-color: #28a745;
+            color: #ffffff;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .action-button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .action-button.active:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        #imageContainer {
+            margin-top: 30px;
+            min-height: 50px;
+            border: 1px dashed #cccccc;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #imageContainer p {
+            color: #999;
+            font-style: italic;
+            margin: 0;
+        }
+        
+        #imageContainer img {
+            max-width: 120px;
+            max-height: 120px;
+            margin: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            object-fit: contain;
+            cursor: grab;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Image to PDF Converter</h1>
+        <p>By Devender Kumar</p>
+        
+        <label for="imageInput" class="file-input-label">
+            Select Images
+        </label>
+        <input type="file" id="imageInput" accept="image/*" multiple>
+
+        <button id="generatePdfButton" class="action-button" disabled>
+            Generate PDF
+        </button>
+        
+        <div id="imageContainer">
+            <p>No images selected yet.</p>
+        </div>
+    </div>
+
+    <!-- Load jsPDF and SortableJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const generatePdfButton = document.getElementById('generatePdfButton');
+        const imageContainer = document.getElementById('imageContainer');
+
+        let loadedImages = []; // {src, width, height}
+
+        function updateGeneratePdfButtonState() {
+            if (loadedImages.length > 0) {
+                generatePdfButton.classList.add('active');
+                generatePdfButton.disabled = false;
+            } else {
+                generatePdfButton.classList.remove('active');
+                generatePdfButton.disabled = true;
+            }
+        }
+
+        imageInput.addEventListener('change', function(event) {
+            imageContainer.innerHTML = '<p>Loading images...</p>';
+            loadedImages = [];
+
+            const files = event.target.files;
+
+            if (files.length === 0) {
+                imageContainer.innerHTML = '<p>No images selected yet.</p>';
+                updateGeneratePdfButtonState();
+                return;
+            }
+
+            let imagesLoadedCount = 0;
+            const totalImages = files.length;
+
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageUrl = e.target.result;
+                        const img = new Image();
+                        img.onload = function() {
+                            if (imagesLoadedCount === 0) {
+                                imageContainer.innerHTML = '';
+                            }
+                            const previewImg = document.createElement('img');
+                            previewImg.src = imageUrl;
+                            imageContainer.appendChild(previewImg);
+
+                            loadedImages.push({
+                                src: imageUrl,
+                                width: img.width,
+                                height: img.height
+                            });
+
+                            imagesLoadedCount++;
+                            if (imagesLoadedCount === totalImages) {
+                                updateGeneratePdfButtonState();
+                            }
+                        };
+                        img.src = imageUrl;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // Drag & drop reorder support
+        new Sortable(imageContainer, {
+            animation: 150,
+            onEnd: function () {
+                const newOrder = [];
+                const previews = imageContainer.querySelectorAll("img");
+                previews.forEach(preview => {
+                    const match = loadedImages.find(i => i.src === preview.src);
+                    if (match) newOrder.push(match);
+                });
+                loadedImages = newOrder;
+            }
+        });
+
+        generatePdfButton.addEventListener('click', async function() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF("p", "mm", "a4");
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            for (let i = 0; i < loadedImages.length; i++) {
+                if (i > 0) pdf.addPage();
+
+                const { src, width, height } = loadedImages[i];
+
+                // Scale proportionally
+                const ratio = Math.min(pageWidth / width, pageHeight / height);
+                const newWidth = width * ratio;
+                const newHeight = height * ratio;
+                const x = (pageWidth - newWidth) / 2;
+                const y = (pageHeight - newHeight) / 2;
+
+                pdf.addImage(src, "JPEG", x, y, newWidth, newHeight);
+            }
+
+            pdf.save("images.pdf");
+        });
+
+        updateGeneratePdfButtonState();
+    </script>
+
+</body>
+</html>
