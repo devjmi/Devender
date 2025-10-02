@@ -94,15 +94,38 @@
             font-style: italic;
             margin: 0;
         }
-        
-        #imageContainer img {
+
+        .preview-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 8px;
+        }
+
+        .preview-wrapper img {
             max-width: 120px;
             max-height: 120px;
-            margin: 8px;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             object-fit: contain;
             cursor: grab;
+            display: block;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            cursor: pointer;
+            line-height: 20px;
+            padding: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -110,7 +133,7 @@
 
     <div class="container">
         <h1>Image to PDF Converter</h1>
-        <p>By Devender Kumar</p>
+        <p>Select your images, drag to reorder, remove unwanted ones, and click 'Generate PDF'.</p>
         
         <label for="imageInput" class="file-input-label">
             Select Images
@@ -144,7 +167,30 @@
             } else {
                 generatePdfButton.classList.remove('active');
                 generatePdfButton.disabled = true;
+                imageContainer.innerHTML = '<p>No images selected yet.</p>';
             }
+        }
+
+        function createPreview(imageObj) {
+            const wrapper = document.createElement('div');
+            wrapper.className = "preview-wrapper";
+
+            const previewImg = document.createElement('img');
+            previewImg.src = imageObj.src;
+            wrapper.appendChild(previewImg);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = "remove-btn";
+            removeBtn.innerHTML = "❌";
+            removeBtn.addEventListener('click', () => {
+                // Remove from loadedImages
+                loadedImages = loadedImages.filter(img => img.src !== imageObj.src);
+                wrapper.remove();
+                updateGeneratePdfButtonState();
+            });
+
+            wrapper.appendChild(removeBtn);
+            imageContainer.appendChild(wrapper);
         }
 
         imageInput.addEventListener('change', function(event) {
@@ -152,9 +198,7 @@
             loadedImages = [];
 
             const files = event.target.files;
-
             if (files.length === 0) {
-                imageContainer.innerHTML = '<p>No images selected yet.</p>';
                 updateGeneratePdfButtonState();
                 return;
             }
@@ -172,15 +216,9 @@
                             if (imagesLoadedCount === 0) {
                                 imageContainer.innerHTML = '';
                             }
-                            const previewImg = document.createElement('img');
-                            previewImg.src = imageUrl;
-                            imageContainer.appendChild(previewImg);
-
-                            loadedImages.push({
-                                src: imageUrl,
-                                width: img.width,
-                                height: img.height
-                            });
+                            const imageObj = { src: imageUrl, width: img.width, height: img.height };
+                            loadedImages.push(imageObj);
+                            createPreview(imageObj);
 
                             imagesLoadedCount++;
                             if (imagesLoadedCount === totalImages) {
@@ -199,7 +237,7 @@
             animation: 150,
             onEnd: function () {
                 const newOrder = [];
-                const previews = imageContainer.querySelectorAll("img");
+                const previews = imageContainer.querySelectorAll(".preview-wrapper img");
                 previews.forEach(preview => {
                     const match = loadedImages.find(i => i.src === preview.src);
                     if (match) newOrder.push(match);
