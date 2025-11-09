@@ -28,6 +28,101 @@
         .animate-fade-in {
             animation: fade-in 0.5s ease-out forwards;
         }
+        
+        /* Cut Pay Calculator Styles */
+        #cutpay-section .vehicle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        #cutpay-section .vehicle-group {
+            border: 1px solid #e5e7eb;
+            padding: 6px;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        #cutpay-section label {
+            font-size: 12px;
+            margin-top: 3px;
+            display: block;
+            color: #374151;
+        }
+
+        #cutpay-section input {
+            padding: 5px;
+            width: 100%;
+            font-size: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            margin-top: 2px;
+            margin-bottom: 3px;
+            box-sizing: border-box;
+        }
+
+        #cutpay-section button {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 500;
+            border: none;
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            margin-top: 3px;
+        }
+
+        #cutpay-section button:hover {
+            background-color: #2563eb;
+        }
+
+        #cutpay-section .remove-vehicle-btn {
+            background-color: #ef4444;
+            margin-top: 4px;
+        }
+        #cutpay-section .remove-vehicle-btn:hover {
+            background-color: #dc2626;
+        }
+
+        #cutpay-section .output {
+            margin-top: 10px;
+            background: #e0f2fe;
+            padding: 8px;
+            border-radius: 6px;
+            color: #1e3a8a;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #cutpay-section #detailedResults {
+            font-size: 12px;
+            padding-bottom: 5px;
+            text-align: left;
+        }
+
+        #cutpay-section #detailedResults ul {
+            list-style: none;
+            padding: 0;
+            margin: 3px 0 0 0;
+        }
+
+        #cutpay-section #detailedResults li {
+            margin-bottom: 2px;
+            padding-bottom: 2px;
+            border-bottom: 1px dashed #cfd8dc;
+        }
+
+        #cutpay-section hr {
+            border: 0;
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
@@ -134,22 +229,27 @@
                     </button>
                 </form>
             </div>
+            
+            <!-- New Cut Pay Calculator Section -->
             <div id="cutpay-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
                 <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Cut Pay Calculator</h2>
-                <p class="text-center text-gray-500 mb-6">Calculate the final payable amount using the provided formula.</p>
-                <form id="cutpay-form" class="space-y-4">
-                    <div>
-                        <label for="cutpay-total-premium" class="block text-sm font-semibold text-gray-700">Total Premium:</label>
-                        <input type="number" id="cutpay-total-premium" placeholder="Enter total premium..." step="0.01" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200">
-                    </div>
-                    <div>
-                        <label for="cutpay-cut-rate" class="block text-sm font-semibold text-gray-700">Cut Rate (%):</label>
-                        <input type="number" id="cutpay-cut-rate" placeholder="Enter cut rate..." step="0.01" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200">
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
-                        Calculate Final Pay
-                    </button>
-                </form>
+                <p class="text-center text-gray-500 mb-6">Calculate the final payable amount for multiple vehicles.</p>
+                
+                <div id="vehicleInputs" class="vehicle-grid"></div>
+                <button id="addVehicleBtn" style="background-color: #06b6d4; margin-bottom: 10px;">+ Add Vehicle</button>
+                <hr>
+
+                <label for="d" class="block text-sm font-semibold text-gray-700">Cut Rate (%):</label>
+                <input type="number" id="d" placeholder="Enter rate..." step="0.01" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+
+                <button id="calculateBtn" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 mt-4">Calculate</button>
+
+                <div class="output" id="resultBox" style="display:none; margin-top: 20px;">
+                    <div id="detailedResults"></div>
+                    <p style="margin-top: 0; border-top: 1px solid #90caf9; padding-top: 5px;">
+                        <strong>Total Final Pay:</strong> <span id="finalResult"></span>
+                    </p>
+                </div>
             </div>
             
             <div id="vahan-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
@@ -209,19 +309,6 @@
             </div>
         </div>
     </div>
-    <div id="cutpay-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300">
-                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Cut Pay Result</h3>
-                <p id="cutpay-modal-result" class="text-2xl font-extrabold text-green-600 text-center mb-6"></p>
-                <div class="text-center mt-6">
-                    <button id="close-cutpay-modal" class="px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <div id="tds-warning-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 transform transition-all duration-300 scale-95">
@@ -256,6 +343,11 @@
                 
                 document.getElementById(tabId + '-section').classList.remove('hidden');
                 document.getElementById('tab-' + tabId).classList.add('text-indigo-600', 'border-indigo-500');
+                
+                // Initialize Cut Pay Calculator when its tab is shown
+                if (tabId === 'cutpay' && !cutpayInitialized) {
+                    initCutPayCalculator();
+                }
             };
             // Event listeners for tab buttons
             tabButtons.forEach(button => {
@@ -373,28 +465,103 @@
             });
             
             // --- Cut Pay Calculator Logic ---
-            const cutpayForm = document.getElementById('cutpay-form');
-            const cutpayModal = document.getElementById('cutpay-modal');
-            const cutpayModalResult = document.getElementById('cutpay-modal-result');
-            const closeCutpayModalBtn = document.getElementById('close-cutpay-modal');
-            cutpayForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const b = parseFloat(document.getElementById("cutpay-total-premium").value);
-                const d = parseFloat(document.getElementById("cutpay-cut-rate").value);
-                if (isNaN(b) || isNaN(d) || b < 0 || d < 0) {
-                    alert("Please enter valid, non-negative numbers for Total premium and Cut Rate.");
+            let cutpayVehicleCount = 0;
+            let cutpayInitialized = false;
+
+            function initCutPayCalculator() {
+                if (cutpayInitialized) return;
+                cutpayInitialized = true;
+
+                // Add the first vehicle input
+                addCutPayVehicleInput();
+
+                // Add event listener for the "Add Vehicle" button
+                document.getElementById('addVehicleBtn').addEventListener('click', () => addCutPayVehicleInput());
+
+                // Add event listener for the "Calculate" button
+                document.getElementById('calculateBtn').addEventListener('click', calculateCutPay);
+            }
+
+            function addCutPayVehicleInput(initialValue = { reg: '', premium: '' }) {
+                cutpayVehicleCount++;
+                const container = document.getElementById('vehicleInputs');
+
+                const div = document.createElement('div');
+                div.classList.add('vehicle-group');
+                div.id = `cutpay-vehicle-${cutpayVehicleCount}`;
+
+                div.innerHTML = `
+                    <label>Vehicle ${cutpayVehicleCount}:</label>
+                    <label for="cutpay-reg-${cutpayVehicleCount}" style="font-size: 10px;">Reg. No. (Optional):</label>
+                    <input type="text" id="cutpay-reg-${cutpayVehicleCount}" class="reg-no" placeholder="ABC-1234" value="${initialValue.reg}">
+                    <label for="cutpay-b-${cutpayVehicleCount}" style="font-size: 10px;">Premium:</label>
+                    <input type="number" id="cutpay-b-${cutpayVehicleCount}" class="total-premium" placeholder="Rs. 0.00" step="0.01" value="${initialValue.premium}">
+                    <button class="remove-vehicle-btn" data-id="${cutpayVehicleCount}">Remove</button>
+                `;
+
+                container.appendChild(div);
+
+                div.querySelector('.reg-no').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                });
+
+                div.querySelector('.remove-vehicle-btn').addEventListener('click', () => {
+                    div.remove();
+                    updateCutPayVehicleLabels();
+                });
+            }
+
+            function updateCutPayVehicleLabels() {
+                const groups = document.querySelectorAll('#cutpay-section .vehicle-group');
+                groups.forEach((group, i) => {
+                    group.querySelector('label').textContent = `Vehicle ${i + 1}:`;
+                });
+            }
+
+            function calculateCutPay() {
+                const cutRate = parseFloat(document.getElementById('d').value);
+                if (isNaN(cutRate)) {
+                    alert('Please enter a valid number for the Cut Rate.');
                     return;
                 }
-                const c = b / 1.18;
-                const e = c * (1 - d / 100);
-                const result = e + (b - c);
-                
-                cutpayModalResult.innerHTML = `₹ ${result.toFixed(2)}`;
-                cutpayModal.classList.remove('hidden');
-            });
-            closeCutpayModalBtn.addEventListener('click', () => {
-                cutpayModal.classList.add('hidden');
-            });
+
+                const groups = document.querySelectorAll('#cutpay-section .vehicle-group');
+                const resultBox = document.getElementById('resultBox');
+                const finalResultSpan = document.getElementById('finalResult');
+                const detailedResultsDiv = document.getElementById('detailedResults');
+
+                let totalFinalPay = 0;
+                let detailedHtml = '<strong>Individual Results:</strong><ul>';
+                let validCount = 0;
+
+                groups.forEach((group, i) => {
+                    const premium = parseFloat(group.querySelector('.total-premium').value);
+                    const regNo = group.querySelector('.reg-no').value.trim() || `Vehicle ${i + 1}`;
+
+                    if (isNaN(premium) || premium <= 0) return;
+
+                    validCount++;
+                    const c = premium / 1.18;
+                    const e = c * (1 - cutRate / 100);
+                    const result = e + (premium - c);
+                    totalFinalPay += result;
+
+                    detailedHtml += `<li><strong>${regNo}:</strong> Rs.${result.toFixed(2)} (Premium: Rs.${premium.toFixed(2)})</li>`;
+                });
+
+                detailedHtml += '</ul>';
+
+                if (validCount === 0) {
+                    alert('Please enter valid premium values.');
+                    resultBox.style.display = 'none';
+                    return;
+                }
+
+                detailedResultsDiv.innerHTML = detailedHtml;
+                finalResultSpan.textContent = 'Rs.' + totalFinalPay.toFixed(2);
+                resultBox.style.display = 'block';
+            }
+            
             // --- Vahan Link Logic ---
             const links = {
                 vahan: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=vahan",
