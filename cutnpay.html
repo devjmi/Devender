@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cut Pay Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    .container {
+      padding: 10px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #1e293b;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .vehicle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .vehicle-group {
+      border: 1px solid #e5e7eb;
+      padding: 6px;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    label {
+      font-size: 12px;
+      margin-top: 3px;
+      display: block;
+      color: #374151;
+    }
+
+    input {
+      padding: 5px;
+      width: 100%;
+      font-size: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      margin-top: 2px;
+      margin-bottom: 3px;
+      box-sizing: border-box;
+    }
+
+    input:disabled {
+      background-color: #f3f4f6;
+      color: #9ca3af;
+    }
+
+    button {
+      background-color: #3b82f6;
+      color: white;
+      font-weight: 500;
+      border: none;
+      padding: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      width: 100%;
+      transition: background-color 0.3s ease;
+      margin-top: 3px;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    .remove-vehicle-btn {
+      background-color: #ef4444;
+      margin-top: 4px;
+    }
+    .remove-vehicle-btn:hover {
+      background-color: #dc2626;
+    }
+
+    .output {
+      margin-top: 10px;
+      background: #e0f2fe;
+      padding: 8px;
+      border-radius: 6px;
+      color: #1e3a8a;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    #detailedResults {
+      font-size: 12px;
+      padding-bottom: 5px;
+      text-align: left;
+    }
+
+    #detailedResults ul {
+      list-style: none;
+      padding: 0;
+      margin: 3px 0 0 0;
+    }
+
+    #detailedResults li {
+      margin-bottom: 2px;
+      padding-bottom: 2px;
+      border-bottom: 1px dashed #cfd8dc;
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 5px 0;
+    }
+
+    .print-btn {
+      background-color: #10b981;
+      margin-top: 5px;
+    }
+    .print-btn:hover {
+      background-color: #059669;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      width: auto;
+      margin-right: 5px;
+    }
+
+    .checkbox-container label {
+      margin-top: 0;
+      font-size: 12px;
+      transition: color 0.3s ease;
+      color: #ef4444; /* Default red */
+    }
+
+    .checkbox-container label.selected {
+      color: #10b981; /* Green when selected */
+      font-weight: 600;
+    }
+
+    .cut-rate-input {
+      display: none;
+    }
+
+    .cut-rate-input.active {
+      display: block;
+    }
+
+    .export-buttons {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .export-buttons button {
+      flex: 1;
+      font-size: 11px;
+      padding: 5px;
+    }
+
+    .excel-btn {
+      background-color: #f97316;
+    }
+    .excel-btn:hover {
+      background-color: #ea580c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Cut Pay Calculator</h2>
+
+    <div id="vehicleInputs" class="vehicle-grid"></div>
+    <button id="addVehicleBtn" style="background-color: #06b6d4;">+ Add Vehicle</button>
+    <hr>
+
+    <div class="checkbox-container">
+      <input type="checkbox" id="separateRates">
+      <label for="separateRates">Use separate cut rates for each vehicle</label>
+    </div>
+
+    <label for="d">Cut Rate (%):</label>
+    <input type="number" id="d" placeholder="Enter rate..." step="0.01">
+
+    <button id="calculateBtn">Calculate</button>
+    
+    <div class="export-buttons" id="exportButtons" style="display:none;">
+      <button id="excelBtn" class="excel-btn">Export Excel</button>
+      <button id="printBtn" class="print-btn">Download PDF</button>
+    </div>
+
+    <div class="output" id="resultBox" style="display:none;">
+      <div id="detailedResults"></div>
+      <p style="margin-top: 0; border-top: 1px solid #90caf9; padding-top: 5px;">
+        <strong>Total Premium:</strong> <span id="totalPremium"></span><br>
+        <strong>Total Final Pay:</strong> <span id="finalResult"></span>
+      </p>
+    </div>
+  </div>
+
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- SheetJS Library for Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script>
+    let vehicleCount = 0;
+    let calculationResults = null;
+    let separateRatesEnabled = false;
+
+    function addVehicleInput(initialValue = { reg: '', premium: '', cutRate: '' }) {
+      vehicleCount++;
+      const container = document.getElementById('vehicleInputs');
+
+      const div = document.createElement('div');
+      div.classList.add('vehicle-group');
+      div.id = `vehicle-${vehicleCount}`;
+
+      div.innerHTML = `
+        <label>Vehicle ${vehicleCount}:</label>
+        <label for="reg-${vehicleCount}" style="font-size: 10px;">Reg. No. (Optional):</label>
+        <input type="text" id="reg-${vehicleCount}" class="reg-no" placeholder="ABC-1234" value="${initialValue.reg}">
+        <label for="b-${vehicleCount}" style="font-size: 10px;">Premium:</label>
+        <input type="number" id="b-${vehicleCount}" class="total-premium" placeholder="Rs. 0.00" step="0.01" value="${initialValue.premium}">
+        <div class="cut-rate-input ${separateRatesEnabled ? 'active' : ''}" id="cut-rate-container-${vehicleCount}">
+          <label for="cut-rate-${vehicleCount}" style="font-size: 10px;">Cut Rate (%):</label>
+          <input type="number" id="cut-rate-${vehicleCount}" class="cut-rate" placeholder="Rate..." step="0.01" value="${initialValue.cutRate}">
+        </div>
+        <button class="remove-vehicle-btn" data-id="${vehicleCount}">Remove</button>
+      `;
+
+      container.appendChild(div);
+
+      div.querySelector('.reg-no').addEventListener('input', (e) => {
+        e.target.value = e.target.value.toUpperCase();
+      });
+
+      div.querySelector('.remove-vehicle-btn').addEventListener('click', () => {
+        div.remove();
+        updateVehicleLabels();
+        hideExportButtons();
+      });
+    }
+
+    function updateVehicleLabels() {
+      const groups = document.querySelectorAll('.vehicle-group');
+      groups.forEach((group, i) => {
+        group.querySelector('label').textContent = `Vehicle ${i + 1}:`;
+      });
+    }
+
+    function hideExportButtons() {
+      document.getElementById('exportButtons').style.display = 'none';
+    }
+
+    function toggleSeparateRates() {
+      separateRatesEnabled = document.getElementById('separateRates').checked;
+      const globalCutRateInput = document.getElementById('d');
+      const cutRateContainers = document.querySelectorAll('.cut-rate-input');
+      const separateRatesLabel = document.querySelector('.checkbox-container label');
+      
+      if (separateRatesEnabled) {
+        globalCutRateInput.disabled = true;
+        cutRateContainers.forEach(container => {
+          container.classList.add('active');
+          const cutRateInput = container.querySelector('.cut-rate');
+          if (!cutRateInput.value && globalCutRateInput.value) {
+            cutRateInput.value = globalCutRateInput.value;
+          }
+        });
+        separateRatesLabel.classList.add('selected');
+      } else {
+        globalCutRateInput.disabled = false;
+        cutRateContainers.forEach(container => {
+          container.classList.remove('active');
+        });
+        separateRatesLabel.classList.remove('selected');
+      }
+      hideExportButtons();
+    }
+
+    window.onload = function() {
+      addVehicleInput();
+      document.getElementById('separateRates').addEventListener('change', toggleSeparateRates);
+    };
+
+    document.getElementById('addVehicleBtn').addEventListener('click', () => {
+      addVehicleInput();
+      hideExportButtons();
+    });
+
+    document.getElementById('calculateBtn').addEventListener('click', function () {
+      const groups = document.querySelectorAll('.vehicle-group');
+      const resultBox = document.getElementById('resultBox');
+      const finalResultSpan = document.getElementById('finalResult');
+      const totalPremiumSpan = document.getElementById('totalPremium');
+      const detailedResultsDiv = document.getElementById('detailedResults');
+
+      let totalFinalPay = 0;
+      let totalPremium = 0;
+      let detailedHtml = '<strong>Individual Results:</strong><ul>';
+      let validCount = 0;
+      calculationResults = {
+        vehicles: [],
+        separateRates: separateRatesEnabled,
+        totalFinalPay: 0,
+        totalPremium: 0
+      };
+
+      groups.forEach((group, i) => {
+        const premium = parseFloat(group.querySelector('.total-premium').value);
+        const regNo = group.querySelector('.reg-no').value.trim() || `Vehicle ${i + 1}`;
+
+        if (isNaN(premium) || premium <= 0) return;
+
+        let cutRate;
+        if (separateRatesEnabled) {
+          cutRate = parseFloat(group.querySelector('.cut-rate').value);
+          if (isNaN(cutRate)) {
+            alert(`Please enter a valid cut rate for ${regNo}.`);
+            return;
+          }
+        } else {
+          cutRate = parseFloat(document.getElementById('d').value);
+          if (isNaN(cutRate)) {
+            alert('Please enter a valid number for the Cut Rate.');
+            return;
+          }
+        }
+
+        validCount++;
+        totalPremium += premium;
+        const c = premium / 1.18;
+        const e = c * (1 - cutRate / 100);
+        const result = e + (premium - c);
+        totalFinalPay += result;
+
+        calculationResults.vehicles.push({
+          regNo: regNo,
+          premium: premium,
+          cutRate: cutRate,
+          result: result
+        });
+
+        detailedHtml += `<li><strong>${regNo}:</strong> Rs.${result.toFixed(2)} (Premium: Rs.${premium.toFixed(2)}, Cut Rate: ${cutRate.toFixed(2)}%)</li>`;
+      });
+
+      calculationResults.totalFinalPay = totalFinalPay;
+      calculationResults.totalPremium = totalPremium;
+
+      detailedHtml += '</ul>';
+
+      if (validCount === 0) {
+        alert('Please enter valid premium values.');
+        resultBox.style.display = 'none';
+        hideExportButtons();
+        return;
+      }
+
+      detailedResultsDiv.innerHTML = detailedHtml;
+      totalPremiumSpan.textContent = 'Rs.' + totalPremium.toFixed(2);
+      finalResultSpan.textContent = 'Rs.' + totalFinalPay.toFixed(2);
+      resultBox.style.display = 'block';
+      document.getElementById('exportButtons').style.display = 'flex';
+    });
+
+    // PDF generation using jsPDF
+    document.getElementById('printBtn').addEventListener('click', function() {
+      if (!calculationResults) return;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      const margin = 15;
+      let y = margin;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("Cut Pay Calculation Report", 105, y, { align: "center" });
+      y += 10;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 105, y, { align: "center" });
+      y += 15;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Vehicle", margin, y);
+      doc.text("Premium (Rs.)", 70, y);
+      doc.text("Cut Rate (%)", 120, y);
+      doc.text("Final Pay (Rs.)", 170, y);
+      y += 6;
+      doc.line(margin, y, 195, y);
+      y += 6;
+
+      doc.setFont("helvetica", "normal");
+      calculationResults.vehicles.forEach(v => {
+        if (y > 270) { doc.addPage(); y = margin; }
+        doc.text(v.regNo, margin, y);
+        doc.text(v.premium.toFixed(2), 70, y);
+        doc.text(v.cutRate.toFixed(2), 125, y);
+        doc.text(v.result.toFixed(2), 180, y, { align: "right" });
+        y += 6;
+      });
+
+      y += 10;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text(`Total Premium: Rs. ${calculationResults.totalPremium.toFixed(2)}`, 195 - margin, y, { align: "right" });
+      y += 8;
+      doc.text(`Total Final Pay: Rs. ${calculationResults.totalFinalPay.toFixed(2)}`, 195 - margin, y, { align: "right" });
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text("By Devender Kumar", 105, 285, { align: "center" });
+      doc.text("devenderkumar@zoho.in", 105, 290, { align: "center" });
+
+      doc.save("cut-pay-calculation.pdf");
+    });
+
+    // Excel Export
+    document.getElementById('excelBtn').addEventListener('click', function() {
+      if (!calculationResults) return;
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Prepare data
+      const data = [
+        ["Vehicle", "Premium (Rs.)", "Cut Rate (%)", "Final Pay (Rs.)"]
+      ];
+      
+      calculationResults.vehicles.forEach(v => {
+        data.push([v.regNo, v.premium, v.cutRate, v.result]);
+      });
+      
+      data.push(["TOTAL", calculationResults.totalPremium, "", calculationResults.totalFinalPay]);
+      
+      // Create worksheet
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Cut Pay Calculation");
+      
+      // Generate Excel file and download
+      XLSX.writeFile(wb, "cut-pay-calculation.xlsx");
+    });
+  </script>
+</body>
+</html>
