@@ -1,96 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image to PDF Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* Applied Inter font for consistency */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            position: relative; /* Added for positioning the back link */
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
         }
-        
-        /* New styles for the back link */
-        .back-link {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #1a73e8;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.3s, transform 0.2s;
-            z-index: 1000;
-        }
-        
-        .back-link:hover {
-            background-color: #185abc;
-            transform: translateY(-2px);
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 25px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        h1 { color: #1a73e8; margin-bottom: 15px; }
-        p { color: #5f6368; margin-bottom: 25px; }
-
-        .file-input-label, .action-button {
-            display: inline-block;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.2s;
-            margin: 10px;
-            border: none;
-        }
-
-        .file-input-label {
-            background-color: #1a73e8;
-            color: #fff;
-        }
-        .file-input-label:hover { background-color: #185abc; transform: translateY(-2px); }
-
-        .action-button {
-            background-color: #28a745;
-            color: #fff;
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        .action-button.active { opacity: 1; pointer-events: auto; }
-        .action-button.active:hover { background-color: #218838; transform: translateY(-2px); }
-
+        /* Custom styles for preview and drag/drop functionality */
         #imageInput { display: none; }
-
-        #imageContainer {
-            margin-top: 30px;
-            min-height: 60px;
-            border: 1px dashed #ccc;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #fcfcfc;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
-        #imageContainer p { color: #999; font-style: italic; margin: 0; }
-
         .preview-wrapper {
             position: relative;
             display: inline-block;
@@ -108,42 +34,51 @@
             position: absolute;
             top: -8px;
             right: -8px;
-            background: red;
+            background: #ef4444; /* Tailwind red-500 */
             color: white;
             border: none;
             border-radius: 50%;
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
             font-size: 14px;
             cursor: pointer;
-            line-height: 20px;
+            line-height: 22px;
             padding: 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 flex items-start justify-center min-h-screen p-4 sm:p-6 md:p-8">
 
-<!-- Added back link -->
-<a href="https://devjmi.github.io/Devender/Insurance-Tools-Hub.html" class="back-link">← Back to Insurance Tools Hub</a>
+    <a href="Insurance-Tools-Hub.html" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+        ← Back to Tools Hub
+    </a>
 
-<div class="container">
-    <h1>Image to PDF Converter</h1>
-    <p>By Devender Kumar</p>
+    <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-2xl mt-8">
+        <h1 class="text-3xl font-bold mb-2 text-gray-800 text-center">Image to PDF Converter</h1>
+        <p class="text-gray-500 mb-6 text-center">Drag and drop or select multiple images to convert them into a single PDF.</p>
 
-    <label for="imageInput" class="file-input-label">Select Images</label>
-    <input type="file" id="imageInput" accept="image/*" multiple>
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
+            <label for="imageInput" class="inline-block py-3 px-6 rounded-lg shadow-md cursor-pointer font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-300 transform hover:scale-[1.01]">
+                Select Images
+            </label>
+            <input type="file" id="imageInput" accept="image/*" multiple>
 
-    <button id="generatePdfButton" class="action-button" disabled>Generate PDF</button>
+            <button id="generatePdfButton" class="action-button py-3 px-6 rounded-lg shadow-md font-semibold text-white bg-emerald-600 opacity-60 pointer-events-none transition-all duration-300 transform hover:scale-[1.01]" disabled>
+                Generate PDF
+            </button>
+        </div>
 
-    <div id="imageContainer"><p>No images selected yet.</p></div>
-</div>
+        <div id="imageContainer" class="mt-8 min-h-24 border-2 border-dashed border-gray-300 p-4 rounded-lg bg-gray-50 flex flex-wrap justify-center items-center transition-colors duration-300 hover:border-indigo-400">
+            <p class="text-gray-500 italic m-0 p-4">No images selected yet. Try dragging files here!</p>
+        </div>
+    </div>
 
-<!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 
 <script>
+// NOTE: The JavaScript is largely unchanged to preserve functionality.
 const imageInput = document.getElementById('imageInput');
 const generatePdfButton = document.getElementById('generatePdfButton');
 const imageContainer = document.getElementById('imageContainer');
@@ -152,12 +87,14 @@ let loadedImages = [];
 
 function updateGeneratePdfButtonState() {
     if (loadedImages.length > 0) {
-        generatePdfButton.classList.add('active');
+        generatePdfButton.classList.add('active', 'hover:bg-emerald-700');
+        generatePdfButton.classList.remove('opacity-60', 'pointer-events-none');
         generatePdfButton.disabled = false;
     } else {
-        generatePdfButton.classList.remove('active');
+        generatePdfButton.classList.remove('active', 'hover:bg-emerald-700');
+        generatePdfButton.classList.add('opacity-60', 'pointer-events-none');
         generatePdfButton.disabled = true;
-        imageContainer.innerHTML = '<p>No images selected yet.</p>';
+        imageContainer.innerHTML = '<p class="text-gray-500 italic m-0 p-4">No images selected yet. Try dragging files here!</p>';
     }
 }
 
@@ -171,7 +108,7 @@ function createPreview(imageObj) {
 
     const removeBtn = document.createElement('button');
     removeBtn.className = "remove-btn";
-    removeBtn.innerHTML = "❌";
+    removeBtn.innerHTML = "×"; // Using 'x' symbol for better consistency
     removeBtn.addEventListener('click', () => {
         loadedImages = loadedImages.filter(img => img.src !== imageObj.src);
         wrapper.remove();
@@ -187,9 +124,10 @@ imageInput.addEventListener('change', function(event) {
     if (files.length === 0) return;
 
     loadedImages = [];
-    imageContainer.innerHTML = '<p>Loading images...</p>';
+    imageContainer.innerHTML = '<p class="text-gray-500 italic m-0 p-4">Loading images...</p>';
     let loadedCount = 0;
 
+    // Use Array.from(files) to handle FileList
     Array.from(files).forEach(file => {
         if (!file.type.startsWith('image/')) return;
 
@@ -200,10 +138,12 @@ imageInput.addEventListener('change', function(event) {
                 const imageObj = { src: e.target.result, width: img.width, height: img.height };
                 loadedImages.push(imageObj);
 
+                // Clear the loading message after the first image is loaded
                 if (loadedCount === 0) imageContainer.innerHTML = '';
                 createPreview(imageObj);
 
                 loadedCount++;
+                // Check if all selected files have been processed
                 if (loadedCount === files.length) updateGeneratePdfButtonState();
             };
             img.src = e.target.result;
@@ -215,8 +155,10 @@ imageInput.addEventListener('change', function(event) {
 // Drag & drop reordering
 new Sortable(imageContainer, {
     animation: 150,
+    filter: 'p', // Don't allow drag on the placeholder paragraph
     onEnd: () => {
         const newOrder = [];
+        // Iterate through the DOM order to update the loadedImages array
         imageContainer.querySelectorAll(".preview-wrapper img").forEach(imgEl => {
             const match = loadedImages.find(i => i.src === imgEl.src);
             if (match) newOrder.push(match);
@@ -228,18 +170,31 @@ new Sortable(imageContainer, {
 // Generate PDF
 generatePdfButton.addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "mm", "a4");
+    // P = Portrait, mm = unit, a4 = format
+    const pdf = new jsPDF("p", "mm", "a4"); 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
+    // 96 DPI is the standard used for CSS/browser pixels
     const pxToMm = px => px * 25.4 / 96;
 
     loadedImages.forEach((imgObj, i) => {
         if (i > 0) pdf.addPage();
 
-        const ratio = Math.min(pageWidth / pxToMm(imgObj.width), pageHeight / pxToMm(imgObj.height));
-        const newWidth = pxToMm(imgObj.width) * ratio;
-        const newHeight = pxToMm(imgObj.height) * ratio;
+        // Calculate aspect ratio and scale to fit page dimensions
+        const imgWidthMm = pxToMm(imgObj.width);
+        const imgHeightMm = pxToMm(imgObj.height);
+        
+        // Max dimensions for fitting on the page (leaving 10mm margin on all sides)
+        const maxPageWidth = pageWidth - 20; 
+        const maxPageHeight = pageHeight - 20;
+
+        const ratio = Math.min(maxPageWidth / imgWidthMm, maxPageHeight / imgHeightMm, 1); // Clamp scale to 1 (no upscaling)
+        
+        const newWidth = imgWidthMm * ratio;
+        const newHeight = imgHeightMm * ratio;
+        
+        // Center the image on the page
         const x = (pageWidth - newWidth) / 2;
         const y = (pageHeight - newHeight) / 2;
 
@@ -256,13 +211,26 @@ generatePdfButton.addEventListener('click', async () => {
 });
 
 // Optional: drag & drop files into container
-imageContainer.addEventListener('dragover', e => e.preventDefault());
+imageContainer.addEventListener('dragover', e => {
+    e.preventDefault();
+    imageContainer.classList.add('border-indigo-600', 'bg-indigo-50');
+});
+
+imageContainer.addEventListener('dragleave', e => {
+    imageContainer.classList.remove('border-indigo-600', 'bg-indigo-50');
+});
+
 imageContainer.addEventListener('drop', e => {
     e.preventDefault();
+    imageContainer.classList.remove('border-indigo-600', 'bg-indigo-50');
     const dtFiles = e.dataTransfer.files;
     if (dtFiles.length > 0) {
-        imageInput.files = dtFiles;
-        imageInput.dispatchEvent(new Event('change'));
+        // Create a new FileList object
+        const dataTransfer = new DataTransfer();
+        Array.from(dtFiles).forEach(file => dataTransfer.items.add(file));
+
+        imageInput.files = dataTransfer.files;
+        imageInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
 });
 
