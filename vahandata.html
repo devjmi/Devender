@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vahan Data - Insurance Tools Hub by Devender Kumar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-lg transform transition-all duration-500 hover:scale-[1.01] overflow-hidden">
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-indigo-800 mb-2">Vahan Data</h1>
+            <p class="text-blue-900">Access key vehicle and claim links instantly.<br>By Devender Kumar</p>
+        </div>
+        
+        <div class="flex flex-col space-y-4">
+            <button id="vahanLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                Vehicle Details
+            </button>
+            <button id="claimLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                Claim Details
+            </button>
+            <button id="iibLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                Insurance Details
+            </button>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="https://devjmi.github.io/Devender/Insurance-Tools-Hub.html" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200">
+                ← Back to Insurance Tools Hub
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const links = {
+                vahan: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=vahan",
+                claim: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=claim",
+                iib: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=iib"
+            };
+            
+            const openPopupWindow = (url) => {
+                window.open(url, '_blank', 'width=800,height=600,noopener,noreferrer');
+            };
+            
+            document.getElementById('vahanLink').addEventListener('click', () => openPopupWindow(links.vahan));
+            document.getElementById('claimLink').addEventListener('click', () => openPopupWindow(links.claim));
+            document.getElementById('iibLink').addEventListener('click', () => openPopupWindow(links.iib));
+        });
+    </script>
+</body>
+</html>
