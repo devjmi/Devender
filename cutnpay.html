@@ -167,7 +167,7 @@
       separateRatesEnabled = document.getElementById('separateRates').checked;
       const globalCutRateInput = document.getElementById('d');
       const cutRateContainers = document.querySelectorAll('.cut-rate-input');
-      const separateRatesLabel = document.querySelector('.checkbox-container label');
+      const separateRatesLabel = document.querySelector('label[for="separateRates"]');
       
       if (separateRatesEnabled) {
         globalCutRateInput.disabled = true;
@@ -246,10 +246,10 @@
         validCount++;
         totalPremium += premium;
         
-        // Calculation logic: Premium / 1.18 (Base ex-GST) -> Apply cut rate to base -> Add back GST on Base
+        // CORRECTED CALCULATION: Using the same logic as the first version
         const c = premium / 1.18; // Base premium excluding 18% GST
         const e = c * (1 - cutRate / 100); // Base premium after cut
-        const result = e * 1.18; // Final pay (Base after cut + 18% GST on Base after cut)
+        const result = e + (premium - c); // Final pay: reduced base + original GST
         
         totalFinalPay += result;
 
