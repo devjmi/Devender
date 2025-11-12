@@ -3,178 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>Cut Pay Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
+    /* Applied Inter font for consistency */
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9fafb;
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-      position: relative; /* Added for positioning the back link */
+        font-family: 'Inter', sans-serif;
+        transition: background-color 0.3s ease;
     }
 
-    /* New style for the back link */
-    .back-link {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 12px;
-      color: #3b82f6;
-      text-decoration: none;
-      font-weight: 500;
-      z-index: 10;
-    }
-
-    .back-link:hover {
-      text-decoration: underline;
-      color: #2563eb;
-    }
-
-    .container {
-      padding: 10px;
-      padding-top: 30px; /* Added space for the back link */
-    }
-
-    h2 {
-      margin-top: 0;
-      color: #1e293b;
-      font-size: 18px;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .vehicle-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .vehicle-group {
-      border: 1px solid #e5e7eb;
-      padding: 6px;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-
-    label {
-      font-size: 12px;
-      margin-top: 3px;
-      display: block;
-      color: #374151;
-    }
-
-    input {
-      padding: 5px;
-      width: 100%;
-      font-size: 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      margin-top: 2px;
-      margin-bottom: 3px;
-      box-sizing: border-box;
-    }
-
-    input:disabled {
-      background-color: #f3f4f6;
-      color: #9ca3af;
-    }
-
-    button {
-      background-color: #3b82f6;
-      color: white;
-      font-weight: 500;
-      border: none;
-      padding: 6px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      width: 100%;
-      transition: background-color 0.3s ease;
-      margin-top: 3px;
-    }
-
-    button:hover {
-      background-color: #2563eb;
-    }
-
-    .remove-vehicle-btn {
-      background-color: #ef4444;
-      margin-top: 4px;
-    }
-    .remove-vehicle-btn:hover {
-      background-color: #dc2626;
-    }
-
-    .output {
-      margin-top: 10px;
-      background: #e0f2fe;
-      padding: 8px;
-      border-radius: 6px;
-      color: #1e3a8a;
-      font-size: 14px;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    #detailedResults {
-      font-size: 12px;
-      padding-bottom: 5px;
-      text-align: left;
-    }
-
-    #detailedResults ul {
-      list-style: none;
-      padding: 0;
-      margin: 3px 0 0 0;
-    }
-
-    #detailedResults li {
-      margin-bottom: 2px;
-      padding-bottom: 2px;
-      border-bottom: 1px dashed #cfd8dc;
-    }
-
-    hr {
-      border: 0;
-      height: 1px;
-      background-color: #e5e7eb;
-      margin: 5px 0;
-    }
-
-    .print-btn {
-      background-color: #10b981;
-      margin-top: 5px;
-    }
-    .print-btn:hover {
-      background-color: #059669;
-    }
-
-    .checkbox-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-
-    .checkbox-container input[type="checkbox"] {
-      width: auto;
-      margin-right: 5px;
-    }
-
-    .checkbox-container label {
-      margin-top: 0;
-      font-size: 12px;
-      transition: color 0.3s ease;
-      color: #ef4444; /* Default red */
-    }
-
-    .checkbox-container label.selected {
-      color: #10b981; /* Green when selected */
-      font-weight: 600;
-    }
-
+    /* Custom classes for specific layout needs not easily handled by utility classes alone */
     .cut-rate-input {
       display: none;
     }
@@ -182,65 +23,79 @@
     .cut-rate-input.active {
       display: block;
     }
+    
+    .vehicle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
 
     .export-buttons {
       display: flex;
-      gap: 5px;
-      margin-top: 5px;
+      gap: 8px;
+      margin-top: 12px;
     }
 
     .export-buttons button {
       flex: 1;
-      font-size: 11px;
-      padding: 5px;
-    }
-
-    .excel-btn {
-      background-color: #f97316;
-    }
-    .excel-btn:hover {
-      background-color: #ea580c;
+      font-size: 14px;
+      padding: 10px;
     }
   </style>
 </head>
-<body>
-  <!-- Back to Insurance Tools Hub Link -->
-  <a href="https://devjmi.github.io/Devender/Insurance-Tools-Hub.html" class="back-link">← Back to Insurance Tools Hub</a>
-  
-  <div class="container">
-    <h2>Cut Pay Calculator</h2>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
 
-    <div id="vehicleInputs" class="vehicle-grid"></div>
-    <button id="addVehicleBtn" style="background-color: #06b6d4;">+ Add Vehicle</button>
-    <hr>
+    <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-lg" id="captureArea">
+      
+      <a href="Insurance-Tools-Hub.html" class="block text-right text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors mb-4">
+          ← Back to Tools Hub
+      </a>
+      
+      <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center border-b pb-2">Cut Pay Calculator</h2>
 
-    <div class="checkbox-container">
-      <input type="checkbox" id="separateRates">
-      <label for="separateRates">Use separate cut rates for each vehicle</label>
+      <div id="vehicleInputs" class="vehicle-grid">
+        </div>
+      
+      <button id="addVehicleBtn" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-300">
+          + Add Vehicle
+      </button>
+      <hr class="my-6 border-gray-300">
+
+      <div class="flex items-center mb-4">
+        <input type="checkbox" id="separateRates" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+        <label for="separateRates" class="ml-2 text-sm font-medium text-gray-700 transition-colors">Use separate cut rates for each vehicle</label>
+      </div>
+
+      <label for="d" class="block text-sm font-medium text-gray-700 mb-1">Global Cut Rate (%):</label>
+      <input type="number" id="d" placeholder="Enter rate..." step="0.01" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-base">
+
+      <button id="calculateBtn" class="mt-4 w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-[1.01]">
+          Calculate
+      </button>
+      
+      <div class="export-buttons" id="exportButtons" style="display:none;">
+        <button id="excelBtn" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 transition-all duration-300">Export Excel</button>
+        <button id="printBtn" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all duration-300">Download PDF</button>
+      </div>
+
+      <div class="output mt-6 p-4 border border-blue-200 rounded-lg bg-blue-50" id="resultBox" style="display:none;">
+        <div id="detailedResults" class="text-sm text-gray-700 mb-3 text-left"></div>
+        <hr class="border-blue-200">
+        <div class="text-base font-bold text-gray-800 pt-3">
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-gray-600">Total Premium:</span>
+            <span id="totalPremium" class="text-indigo-600"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-800 text-lg">Total Final Pay:</span>
+            <span id="finalResult" class="text-emerald-600 text-xl"></span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <label for="d">Cut Rate (%):</label>
-    <input type="number" id="d" placeholder="Enter rate..." step="0.01">
-
-    <button id="calculateBtn">Calculate</button>
-    
-    <div class="export-buttons" id="exportButtons" style="display:none;">
-      <button id="excelBtn" class="excel-btn">Export Excel</button>
-      <button id="printBtn" class="print-btn">Download PDF</button>
-    </div>
-
-    <div class="output" id="resultBox" style="display:none;">
-      <div id="detailedResults"></div>
-      <p style="margin-top: 0; border-top: 1px solid #90caf9; padding-top: 5px;">
-        <strong>Total Premium:</strong> <span id="totalPremium"></span><br>
-        <strong>Total Final Pay:</strong> <span id="finalResult"></span>
-      </p>
-    </div>
-  </div>
-
-  <!-- jsPDF Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- SheetJS Library for Excel export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script>
@@ -248,25 +103,39 @@
     let calculationResults = null;
     let separateRatesEnabled = false;
 
+    // Helper function to format numbers as Indian Rupees
+    function formatCurrency(amount) {
+        return 'Rs.' + new Intl.NumberFormat('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(amount);
+    }
+
+
     function addVehicleInput(initialValue = { reg: '', premium: '', cutRate: '' }) {
       vehicleCount++;
       const container = document.getElementById('vehicleInputs');
 
       const div = document.createElement('div');
-      div.classList.add('vehicle-group');
+      // UPDATED: Use Tailwind classes for card styling on each vehicle group
+      div.classList.add('p-4', 'border', 'border-gray-200', 'rounded-lg', 'bg-white', 'shadow-sm', 'vehicle-group');
       div.id = `vehicle-${vehicleCount}`;
 
       div.innerHTML = `
-        <label>Vehicle ${vehicleCount}:</label>
-        <label for="reg-${vehicleCount}" style="font-size: 10px;">Reg. No. (Optional):</label>
-        <input type="text" id="reg-${vehicleCount}" class="reg-no" placeholder="ABC-1234" value="${initialValue.reg}">
-        <label for="b-${vehicleCount}" style="font-size: 10px;">Premium:</label>
-        <input type="number" id="b-${vehicleCount}" class="total-premium" placeholder="Rs. 0.00" step="0.01" value="${initialValue.premium}">
+        <label class="block text-sm font-semibold text-gray-800 mb-2">Vehicle <span class="vehicle-number">${vehicleCount}</span>:</label>
+        
+        <label for="reg-${vehicleCount}" class="block text-xs font-medium text-gray-500 mb-1">Reg. No. (Optional):</label>
+        <input type="text" id="reg-${vehicleCount}" class="reg-no w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm mb-2" placeholder="ABC-1234" value="${initialValue.reg}">
+        
+        <label for="b-${vehicleCount}" class="block text-xs font-medium text-gray-500 mb-1">Premium:</label>
+        <input type="number" id="b-${vehicleCount}" class="total-premium w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm mb-2" placeholder="Rs. 0.00" step="0.01" value="${initialValue.premium}">
+        
         <div class="cut-rate-input ${separateRatesEnabled ? 'active' : ''}" id="cut-rate-container-${vehicleCount}">
-          <label for="cut-rate-${vehicleCount}" style="font-size: 10px;">Cut Rate (%):</label>
-          <input type="number" id="cut-rate-${vehicleCount}" class="cut-rate" placeholder="Rate..." step="0.01" value="${initialValue.cutRate}">
+          <label for="cut-rate-${vehicleCount}" class="block text-xs font-medium text-gray-500 mb-1">Cut Rate (%):</label>
+          <input type="number" id="cut-rate-${vehicleCount}" class="cut-rate w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm mb-2" placeholder="Rate..." step="0.01" value="${initialValue.cutRate}">
         </div>
-        <button class="remove-vehicle-btn" data-id="${vehicleCount}">Remove</button>
+        
+        <button class="remove-vehicle-btn w-full py-1 mt-3 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all" data-id="${vehicleCount}">Remove</button>
       `;
 
       container.appendChild(div);
@@ -285,12 +154,13 @@
     function updateVehicleLabels() {
       const groups = document.querySelectorAll('.vehicle-group');
       groups.forEach((group, i) => {
-        group.querySelector('label').textContent = `Vehicle ${i + 1}:`;
+        group.querySelector('.vehicle-number').textContent = `${i + 1}`;
       });
     }
 
     function hideExportButtons() {
       document.getElementById('exportButtons').style.display = 'none';
+      document.getElementById('resultBox').style.display = 'none';
     }
 
     function toggleSeparateRates() {
@@ -301,6 +171,7 @@
       
       if (separateRatesEnabled) {
         globalCutRateInput.disabled = true;
+        globalCutRateInput.classList.add('bg-gray-100');
         cutRateContainers.forEach(container => {
           container.classList.add('active');
           const cutRateInput = container.querySelector('.cut-rate');
@@ -308,13 +179,17 @@
             cutRateInput.value = globalCutRateInput.value;
           }
         });
-        separateRatesLabel.classList.add('selected');
+        // Set a contrasting color when selected
+        separateRatesLabel.classList.add('text-emerald-600'); 
+        separateRatesLabel.classList.remove('text-gray-700'); 
       } else {
         globalCutRateInput.disabled = false;
+        globalCutRateInput.classList.remove('bg-gray-100');
         cutRateContainers.forEach(container => {
           container.classList.remove('active');
         });
-        separateRatesLabel.classList.remove('selected');
+        separateRatesLabel.classList.remove('text-emerald-600');
+        separateRatesLabel.classList.add('text-gray-700');
       }
       hideExportButtons();
     }
@@ -338,7 +213,7 @@
 
       let totalFinalPay = 0;
       let totalPremium = 0;
-      let detailedHtml = '<strong>Individual Results:</strong><ul>';
+      let detailedHtml = '<p class="font-bold text-gray-800 mb-2">Individual Results:</p><ul class="list-disc pl-5 space-y-1">';
       let validCount = 0;
       calculationResults = {
         vehicles: [],
@@ -363,16 +238,19 @@
         } else {
           cutRate = parseFloat(document.getElementById('d').value);
           if (isNaN(cutRate)) {
-            alert('Please enter a valid number for the Cut Rate.');
+            alert('Please enter a valid number for the Global Cut Rate.');
             return;
           }
         }
 
         validCount++;
         totalPremium += premium;
-        const c = premium / 1.18;
-        const e = c * (1 - cutRate / 100);
-        const result = e + (premium - c);
+        
+        // Calculation logic: Premium / 1.18 (Base ex-GST) -> Apply cut rate to base -> Add back GST on Base
+        const c = premium / 1.18; // Base premium excluding 18% GST
+        const e = c * (1 - cutRate / 100); // Base premium after cut
+        const result = e * 1.18; // Final pay (Base after cut + 18% GST on Base after cut)
+        
         totalFinalPay += result;
 
         calculationResults.vehicles.push({
@@ -382,7 +260,7 @@
           result: result
         });
 
-        detailedHtml += `<li><strong>${regNo}:</strong> Rs.${result.toFixed(2)} (Premium: Rs.${premium.toFixed(2)}, Cut Rate: ${cutRate.toFixed(2)}%)</li>`;
+        detailedHtml += `<li class="border-b border-gray-200 pb-1"><strong>${regNo}:</strong> <span class="text-indigo-600 font-semibold">${formatCurrency(result)}</span> (Premium: ${formatCurrency(premium)}, Cut Rate: ${cutRate.toFixed(2)}%)</li>`;
       });
 
       calculationResults.totalFinalPay = totalFinalPay;
@@ -392,14 +270,13 @@
 
       if (validCount === 0) {
         alert('Please enter valid premium values.');
-        resultBox.style.display = 'none';
         hideExportButtons();
         return;
       }
 
       detailedResultsDiv.innerHTML = detailedHtml;
-      totalPremiumSpan.textContent = 'Rs.' + totalPremium.toFixed(2);
-      finalResultSpan.textContent = 'Rs.' + totalFinalPay.toFixed(2);
+      totalPremiumSpan.textContent = formatCurrency(totalPremium);
+      finalResultSpan.textContent = formatCurrency(totalFinalPay);
       resultBox.style.display = 'block';
       document.getElementById('exportButtons').style.display = 'flex';
     });
@@ -413,47 +290,59 @@
 
       const margin = 15;
       let y = margin;
+      const pageWidth = doc.internal.pageSize.getWidth();
 
-      doc.setFont("helvetica", "bold");
+      doc.setFont("Inter", "bold");
       doc.setFontSize(18);
-      doc.text("Cut Pay Calculation Report", 105, y, { align: "center" });
+      doc.text("Cut Pay Calculation Report", pageWidth / 2, y, { align: "center" });
       y += 10;
 
-      doc.setFont("helvetica", "normal");
+      doc.setFont("Inter", "normal");
       doc.setFontSize(11);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 105, y, { align: "center" });
+      doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, pageWidth / 2, y, { align: "center" });
       y += 15;
 
-      doc.setFont("helvetica", "bold");
-      doc.text("Vehicle", margin, y);
-      doc.text("Premium (Rs.)", 70, y);
-      doc.text("Cut Rate (%)", 120, y);
-      doc.text("Final Pay (Rs.)", 170, y);
-      y += 6;
-      doc.line(margin, y, 195, y);
-      y += 6;
+      // Table Headers
+      doc.setFillColor(235, 245, 255); // Light blue header background
+      doc.rect(margin, y - 4, pageWidth - 2 * margin, 8, 'F');
+      doc.setFont("Inter", "bold");
+      doc.setFontSize(12);
+      doc.text("Vehicle", margin + 2, y);
+      doc.text("Premium (Rs.)", 70, y, { align: "left" });
+      doc.text("Cut Rate (%)", 120, y, { align: "left" });
+      doc.text("Final Pay (Rs.)", 195 - margin - 2, y, { align: "right" });
+      y += 8;
 
-      doc.setFont("helvetica", "normal");
+      // Table Content
+      doc.setFont("Inter", "normal");
+      doc.setFontSize(11);
       calculationResults.vehicles.forEach(v => {
-        if (y > 270) { doc.addPage(); y = margin; }
-        doc.text(v.regNo, margin, y);
-        doc.text(v.premium.toFixed(2), 70, y);
-        doc.text(v.cutRate.toFixed(2), 125, y);
-        doc.text(v.result.toFixed(2), 180, y, { align: "right" });
-        y += 6;
+        if (y > 270) { doc.addPage(); y = margin + 18; }
+        doc.text(v.regNo, margin + 2, y);
+        doc.text(v.premium.toFixed(2), 70, y, { align: "left" });
+        doc.text(v.cutRate.toFixed(2), 125, y, { align: "left" });
+        doc.text(v.result.toFixed(2), 195 - margin - 2, y, { align: "right" });
+        y += 7;
       });
 
+      // Total Results
       y += 10;
-      doc.setFont("helvetica", "bold");
+      doc.setLineWidth(0.5);
+      doc.line(margin, y, 195 - margin, y);
+      y += 5;
+
+      doc.setFont("Inter", "bold");
       doc.setFontSize(13);
-      doc.text(`Total Premium: Rs. ${calculationResults.totalPremium.toFixed(2)}`, 195 - margin, y, { align: "right" });
+      doc.text(`Total Premium: ${formatCurrency(calculationResults.totalPremium)}`, 195 - margin, y, { align: "right" });
       y += 8;
-      doc.text(`Total Final Pay: Rs. ${calculationResults.totalFinalPay.toFixed(2)}`, 195 - margin, y, { align: "right" });
+      
+      doc.setFontSize(15);
+      doc.setTextColor(16, 185, 129); // Emerald color
+      doc.text(`Total Final Pay: ${formatCurrency(calculationResults.totalFinalPay)}`, 195 - margin, y, { align: "right" });
 
       doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text("By Devender Kumar", 105, 285, { align: "center" });
-      doc.text("devenderkumar@zoho.in", 105, 290, { align: "center" });
+      doc.setTextColor(156, 163, 175); // Gray footer
+      doc.text("By Devender Kumar | devenderkumar@zoho.in", pageWidth / 2, 285, { align: "center" });
 
       doc.save("cut-pay-calculation.pdf");
     });
@@ -462,7 +351,6 @@
     document.getElementById('excelBtn').addEventListener('click', function() {
       if (!calculationResults) return;
 
-      // Create workbook
       const wb = XLSX.utils.book_new();
       
       // Prepare data
@@ -476,13 +364,10 @@
       
       data.push(["TOTAL", calculationResults.totalPremium, "", calculationResults.totalFinalPay]);
       
-      // Create worksheet
       const ws = XLSX.utils.aoa_to_sheet(data);
       
-      // Add worksheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, "Cut Pay Calculation");
       
-      // Generate Excel file and download
       XLSX.writeFile(wb, "cut-pay-calculation.xlsx");
     });
   </script>
