@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,19 +48,19 @@
             <button id="tab-commission" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
                 Commission
             </button>
-            <a href="https://devjmi.github.io/Devender/cutnpay.html" target="_blank" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+            <a href="https://devjmi.github.io/Devender/cutnpay.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
                 Cut Pay Calculator
             </a>
-            <button id="tab-vahan" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+            <a href="https://devjmi.github.io/Devender/vahandata.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
                 Vahan Data
-            </button>
-            <a href="https://devjmi.github.io/Devender/schoolbus.html" target="_blank" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+            </a>
+            <a href="https://devjmi.github.io/Devender/schoolbus.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
                 School Bus Premium Calculator
             </a>
-            <a href="https://devjmi.github.io/Devender/GCV%20Premium%20Calculator%20.html" target="_blank" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+            <a href="https://devjmi.github.io/Devender/GCV%20Premium%20Calculator%20.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
                 GCV Premium Calculator
             </a>
-            <a href="https://devjmi.github.io/Devender/Image-to-PDF-Converter.html" target="_blank" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+            <a href="https://devjmi.github.io/Devender/Image-to-PDF-Converter.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
                 Image to PDF Converter
             </a>
         </div>
@@ -133,23 +134,6 @@
                         Calculate Commission
                     </button>
                 </form>
-            </div>
-            
-            <div id="vahan-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
-                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Vahan Data</h2>
-                <p class="text-center text-gray-500 mb-6">Access key vehicle and claim links instantly.</p>
-                
-                <div class="flex flex-col space-y-4">
-                    <button id="vahanLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
-                        Vehicle Details
-                    </button>
-                    <button id="claimLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
-                        Claim Details
-                    </button>
-                    <button id="iibLink" class="w-full py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
-                        Insurance Details
-                    </button>
-                </div>
             </div>
         </div> </div>
     
@@ -344,18 +328,6 @@
                 commissionModal.classList.add('hidden');
             });
             
-            // --- Vahan Link Logic ---
-            const links = {
-                vahan: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=vahan",
-                claim: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=claim",
-                iib: "https://shrigenservice.shriramgi.com/PreinspectionApp/GIM.PREINSPECTION/PI_IIB_PopUpWindow.aspx?id=iib"
-            };
-            const openPopupWindow = (url) => {
-                window.open(url, '_blank', 'width=800,height=600,noopener,noreferrer');
-            };
-            document.getElementById('vahanLink').addEventListener('click', () => openPopupWindow(links.vahan));
-            document.getElementById('claimLink').addEventListener('click', () => openPopupWindow(links.claim));
-            document.getElementById('iibLink').addEventListener('click', () => openPopupWindow(links.iib));
             // --- New TDS Warning Modal Logic ---
             let tdsWarningShown = false; // Flag to ensure the warning only shows once per session
             const tdsRateInput = document.getElementById('tdsRate');
