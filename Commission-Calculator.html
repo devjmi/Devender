@@ -33,9 +33,10 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 20px;
             width: 320px;
+            position: relative; /* Added for positioning the back link */
         }
         h3 {
-            margin-top: 0;
+            margin-top: 25px; /* Added space between heading and back link */
             color: var(--primary-color);
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
@@ -142,12 +143,33 @@
             font-size: 1.2rem;
             font-weight: bold;
         }
+        /* New styles for the back link */
+        .back-link {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            padding: 5px 10px;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .back-link:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <div class="container" id="captureArea">
+        <!-- Added back link -->
+        <a href="https://devjmi.github.io/Devender/Insurance-Tools-Hub.html" class="back-link">Back to Insurance Tools Hub</a>
+        
         <h3>Motor Commission Calculator</h3>
         <form id="commissionForm">
             <label>Own Damage (OD) Details</label>
