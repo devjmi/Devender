@@ -3,269 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to PDF Converter</title>
+    <title>Insurance Tools Hub by Devender Kumar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* Base font and transition for a smooth experience */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            position: relative; /* Added for positioning the back link */
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
         }
-        
-        /* New styles for the back link */
-        .back-link {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #1a73e8;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.3s, transform 0.2s;
-            z-index: 1000;
+        /* Custom animation for results box */
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        .back-link:hover {
-            background-color: #185abc;
-            transform: translateY(-2px);
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 25px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        h1 { color: #1a73e8; margin-bottom: 15px; }
-        p { color: #5f6368; margin-bottom: 25px; }
-
-        .file-input-label, .action-button {
-            display: inline-block;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.2s;
-            margin: 10px;
-            border: none;
-        }
-
-        .file-input-label {
-            background-color: #1a73e8;
-            color: #fff;
-        }
-        .file-input-label:hover { background-color: #185abc; transform: translateY(-2px); }
-
-        .action-button {
-            background-color: #28a745;
-            color: #fff;
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        .action-button.active { opacity: 1; pointer-events: auto; }
-        .action-button.active:hover { background-color: #218838; transform: translateY(-2px); }
-
-        #imageInput { display: none; }
-
-        #imageContainer {
-            margin-top: 30px;
-            min-height: 60px;
-            border: 1px dashed #ccc;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #fcfcfc;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
-        #imageContainer p { color: #999; font-style: italic; margin: 0; }
-
-        .preview-wrapper {
-            position: relative;
-            display: inline-block;
-            margin: 8px;
-        }
-        .preview-wrapper img {
-            max-width: 120px;
-            max-height: 120px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            object-fit: contain;
-            cursor: grab;
-        }
-        .remove-btn {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: red;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 14px;
-            cursor: pointer;
-            line-height: 20px;
-            padding: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
         }
     </style>
 </head>
-<body>
-
-<!-- Added back link -->
-<a href="https://devjmi.github.io/Devender/Insurance-Tools-Hub.html" class="back-link">← Back to Insurance Tools Hub</a>
-
-<div class="container">
-    <h1>Image to PDF Converter</h1>
-    <p>By Devender Kumar</p>
-
-    <label for="imageInput" class="file-input-label">Select Images</label>
-    <input type="file" id="imageInput" accept="image/*" multiple>
-
-    <button id="generatePdfButton" class="action-button" disabled>Generate PDF</button>
-
-    <div id="imageContainer"><p>No images selected yet.</p></div>
-</div>
-
-<!-- Libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-
-<script>
-const imageInput = document.getElementById('imageInput');
-const generatePdfButton = document.getElementById('generatePdfButton');
-const imageContainer = document.getElementById('imageContainer');
-
-let loadedImages = [];
-
-function updateGeneratePdfButtonState() {
-    if (loadedImages.length > 0) {
-        generatePdfButton.classList.add('active');
-        generatePdfButton.disabled = false;
-    } else {
-        generatePdfButton.classList.remove('active');
-        generatePdfButton.disabled = true;
-        imageContainer.innerHTML = '<p>No images selected yet.</p>';
-    }
-}
-
-function createPreview(imageObj) {
-    const wrapper = document.createElement('div');
-    wrapper.className = "preview-wrapper";
-
-    const previewImg = document.createElement('img');
-    previewImg.src = imageObj.src;
-    wrapper.appendChild(previewImg);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.className = "remove-btn";
-    removeBtn.innerHTML = "❌";
-    removeBtn.addEventListener('click', () => {
-        loadedImages = loadedImages.filter(img => img.src !== imageObj.src);
-        wrapper.remove();
-        updateGeneratePdfButtonState();
-    });
-
-    wrapper.appendChild(removeBtn);
-    imageContainer.appendChild(wrapper);
-}
-
-imageInput.addEventListener('change', function(event) {
-    const files = event.target.files;
-    if (files.length === 0) return;
-
-    loadedImages = [];
-    imageContainer.innerHTML = '<p>Loading images...</p>';
-    let loadedCount = 0;
-
-    Array.from(files).forEach(file => {
-        if (!file.type.startsWith('image/')) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const imageObj = { src: e.target.result, width: img.width, height: img.height };
-                loadedImages.push(imageObj);
-
-                if (loadedCount === 0) imageContainer.innerHTML = '';
-                createPreview(imageObj);
-
-                loadedCount++;
-                if (loadedCount === files.length) updateGeneratePdfButtonState();
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-4xl transform transition-all duration-500 hover:scale-[1.01] overflow-hidden">
+        
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-indigo-800 mb-2">Insurance Tools Hub</h1>
+            <p class="text-blue-900">A Collection Of Calculators And Links For Insurance Professionals<br>By Devender Kumar</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-2 mb-6 border-b border-gray-200">
+            <button id="tab-idv" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                IDV Calculator
+            </button>
+            <button id="tab-depreciation" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Depreciation
+            </button>
+            <a href="https://devjmi.github.io/Devender/Commission-Calculator.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Commission Calculator
+            </a>
+            <a href="https://devjmi.github.io/Devender/cutnpay.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Cut Pay Calculator
+            </a>
+            <a href="https://devjmi.github.io/Devender/vahandata.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Vahan Data
+            </a>
+            <a href="https://devjmi.github.io/Devender/schoolbus.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                School Bus Premium Calculator
+            </a>
+            <a href="https://devjmi.github.io/Devender/GCV%20Premium%20Calculator%20.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                GCV Premium Calculator
+            </a>
+            <a href="https://devjmi.github.io/Devender/Image-to-PDF-Converter.html" class="tab-button px-4 py-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-indigo-600 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500 focus:outline-none focus:border-indigo-500">
+                Image to PDF Converter
+            </a>
+        </div>
+        <div id="content-container" class="flex flex-col items-center">
+            <div id="idv-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Vehicle's IDV Calculator</h2>
+                <p class="text-center text-gray-500 mb-6">Calculate your vehicle's approximate IDV based on its age.</p>
+                
+                <form id="idv-form" class="space-y-4">
+                    <div>
+                        <label for="initial-value" class="block text-sm font-semibold text-gray-700">Vehicle Purchase Amount:</label>
+                        <input type="number" id="initial-value" required class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                    </div>
+                    <div>
+                        <label for="mfg-year" class="block text-sm font-semibold text-gray-700">Manufacturing Year:</label>
+                        <input type="number" id="mfg-year" required placeholder="e.g., 2022" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Calculate IDV
+                    </button>
+                </form>
+            </div>
+            <div id="depreciation-section" class="tab-content w-full max-w-lg p-4 sm:p-6 bg-gray-50 rounded-2xl shadow-inner border border-gray-100 transition-all duration-300 transform scale-100 hidden">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Depreciation Calculator</h2>
+                <p class="text-center text-gray-500 mb-6">Calculate remaining value after a fixed depreciation percentage.</p>
+                
+                <form id="depreciation-form" class="space-y-4">
+                    <div>
+                        <label for="dep-initial-value" class="block text-sm font-medium text-slate-600 mb-2">Asset Value:</label>
+                        <input type="number" id="dep-initial-value" placeholder="e.g., 100000" class="form-input w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105">
+                        Calculate
+                    </button>
+                </form>
+            </div>
+        </div> </div>
+    
+    <div id="idv-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Calculated IDV</h3>
+                <p id="idv-modal-result" class="text-2xl font-extrabold text-green-600 text-center mb-6"></p>
+                <div class="text-center">
+                    <button id="close-idv-modal" class="px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="depreciation-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Depreciation Results</h3>
+                <div id="depreciation-modal-result" class="space-y-4"></div>
+                <div class="text-center mt-6">
+                    <button id="close-depreciation-modal" class="px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Tab Switching Logic ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            // Function to show a specific tab and update button styling
+            const showTab = (tabId) => {
+                tabContents.forEach(content => content.classList.add('hidden'));
+                tabButtons.forEach(button => {
+                    button.classList.remove('text-indigo-600', 'border-indigo-500');
+                    button.classList.add('text-gray-700', 'border-transparent');
+                });
+                
+                document.getElementById(tabId + '-section').classList.remove('hidden');
+                document.getElementById('tab-' + tabId).classList.add('text-indigo-600', 'border-indigo-500');
             };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-});
+            // Event listeners for tab buttons
+            tabButtons.forEach(button => {
+                if (button.tagName === 'BUTTON') {
+                    button.addEventListener('click', () => {
+                        const tabId = button.id.replace('tab-', '');
+                        showTab(tabId);
+                    });
+                }
+            });
+            // Set initial active tab on page load
+            showTab('idv');
+            
+            // --- IDV Calculator Logic ---
+            const idvForm = document.getElementById('idv-form');
+            const idvModal = document.getElementById('idv-modal');
+            const idvModalResult = document.getElementById('idv-modal-result');
+            const closeIdvModalBtn = document.getElementById('close-idv-modal');
+            idvForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const initialValue = parseFloat(document.getElementById('initial-value').value);
+                const mfgYear = parseInt(document.getElementById('mfg-year').value);
+                const currentYear = new Date().getFullYear();
+                const depreciationRate = 0.10;
+                if (isNaN(initialValue) || initialValue <= 0) {
+                    alert("Please enter a valid positive value for the vehicle purchase amount.");
+                    return;
+                }
+                if (isNaN(mfgYear) || mfgYear > currentYear) {
+                    alert("Manufacturing year cannot be in the future.");
+                    return;
+                }
+                const yearsElapsed = currentYear - mfgYear;
+                const currentValue = initialValue * Math.pow(1 - depreciationRate, yearsElapsed);
+                
+                idvModalResult.textContent = `₹ ${Math.round(currentValue).toLocaleString('en-IN')}`;
+                idvModal.classList.remove('hidden');
+            });
+            closeIdvModalBtn.addEventListener('click', () => {
+                idvModal.classList.add('hidden');
+            });
 
-// Drag & drop reordering
-new Sortable(imageContainer, {
-    animation: 150,
-    onEnd: () => {
-        const newOrder = [];
-        imageContainer.querySelectorAll(".preview-wrapper img").forEach(imgEl => {
-            const match = loadedImages.find(i => i.src === imgEl.src);
-            if (match) newOrder.push(match);
+            // --- Depreciation Calculator Logic ---
+            const depreciationForm = document.getElementById('depreciation-form');
+            const depreciationModal = document.getElementById('depreciation-modal');
+            const depreciationModalResult = document.getElementById('depreciation-modal-result');
+            const closeDepreciationModalBtn = document.getElementById('close-depreciation-modal');
+            depreciationForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const assetValue = parseFloat(document.getElementById('dep-initial-value').value);
+                if (isNaN(assetValue) || assetValue <= 0) {
+                    alert("Please enter a valid asset value.");
+                    return;
+                }
+                const remaining5 = assetValue * (1 - 0.05);
+                const remaining10 = assetValue * (1 - 0.10);
+                depreciationModalResult.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-white rounded-md border">
+                            <span class="text-gray-600">After 5% Depreciation:</span>
+                            <span class="font-bold text-lg text-emerald-600">₹ ${remaining5.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-white rounded-md border">
+                            <span class="text-gray-600">After 10% Depreciation:</span>
+                            <span class="font-bold text-lg text-emerald-600">₹ ${remaining10.toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+                `;
+                depreciationModal.classList.remove('hidden');
+            });
+            closeDepreciationModalBtn.addEventListener('click', () => {
+                depreciationModal.classList.add('hidden');
+            });
         });
-        loadedImages = newOrder;
-    }
-});
-
-// Generate PDF
-generatePdfButton.addEventListener('click', async () => {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    const pxToMm = px => px * 25.4 / 96;
-
-    loadedImages.forEach((imgObj, i) => {
-        if (i > 0) pdf.addPage();
-
-        const ratio = Math.min(pageWidth / pxToMm(imgObj.width), pageHeight / pxToMm(imgObj.height));
-        const newWidth = pxToMm(imgObj.width) * ratio;
-        const newHeight = pxToMm(imgObj.height) * ratio;
-        const x = (pageWidth - newWidth) / 2;
-        const y = (pageHeight - newHeight) / 2;
-
-        const extension = imgObj.src.includes("png") ? "PNG" : "JPEG";
-        pdf.addImage(imgObj.src, extension, x, y, newWidth, newHeight);
-    });
-
-    // Filename: imageDDMMHHMMSS.pdf
-    const now = new Date();
-    const pad = n => n.toString().padStart(2, '0');
-    const fileName = `image${pad(now.getDate())}${pad(now.getMonth()+1)}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.pdf`;
-
-    pdf.save(fileName);
-});
-
-// Optional: drag & drop files into container
-imageContainer.addEventListener('dragover', e => e.preventDefault());
-imageContainer.addEventListener('drop', e => {
-    e.preventDefault();
-    const dtFiles = e.dataTransfer.files;
-    if (dtFiles.length > 0) {
-        imageInput.files = dtFiles;
-        imageInput.dispatchEvent(new Event('change'));
-    }
-});
-
-updateGeneratePdfButtonState();
-</script>
+    </script>
+       <!-- Histats.com  START  (aync)-->
+<script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,4978265,4,0,0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('//s10.histats.com/js15_as.js');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="//sstatic1.histats.com/0.gif?4978265&101" alt="web stats" border="0"></a></noscript>
+<!-- Histats.com  END  -->
 </body>
 </html>
