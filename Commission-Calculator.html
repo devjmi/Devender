@@ -3,83 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commission Calculator</title>
+    <title>Motor Commission Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --background-color: #f8f9fa;
-            --card-background: #ffffff;
-            --text-color: #343a40;
-            --border-color: #dee2e6;
-        }
+        /* Applied Inter font for consistency */
         body {
-            width: 100%;
-            height: 100vh;
-            padding: 15px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
         }
-        .container {
-            background-color: var(--card-background);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 320px;
-            position: relative; /* Added for positioning the back link */
-        }
-        h3 {
-            margin-top: 25px; /* Added space between heading and back link */
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            text-align: center;
-        }
+        /* Custom styles to handle layout/behavior not easily done in Tailwind */
         .input-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 15px;
         }
-        .input-item {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            font-weight: bold;
-            margin-bottom: 4px;
-            font-size: 0.85rem;
-            color: var(--secondary-color);
-        }
-        input[type="number"] {
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-        }
         .tds-rate-group {
-            margin-bottom: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }
-        .tds-checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .tds-checkbox-group input[type="checkbox"] {
-            margin-right: 8px;
+            margin-bottom: 20px;
         }
         .tds-input-group {
             display: none;
@@ -89,145 +36,107 @@
         .tds-input-group.active {
             display: flex;
         }
-        .tds-input-group label {
-            margin-right: 10px;
-            margin-bottom: 0;
-        }
-        .tds-input-group input {
-            width: 80px;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .button-group button {
-            flex-grow: 1;
-            padding: 10px;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        #calculateButton {
-            background-color: var(--primary-color);
-        }
-        #calculateButton:hover {
-            background-color: #0056b3;
-        }
-        #pdfButton {
-            background-color: var(--success-color);
-        }
-        #pdfButton:hover {
-            background-color: #1e7e34;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background-color: var(--background-color);
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        .result-item strong {
-            color: var(--primary-color);
-        }
-        #netCommissionValue {
-            color: var(--success-color);
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        /* New styles for the back link */
-        .back-link {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: bold;
-            padding: 5px 10px;
-            border: 1px solid var(--primary-color);
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .back-link:hover {
-            background-color: var(--primary-color);
-            color: white;
+        @media print {
+            .back-link, .button-group, .tds-rate-group, .tds-checkbox-group {
+                display: none !important;
+            }
+            body {
+                background-color: white !important;
+                display: block !important;
+                min-height: auto !important;
+                padding: 0 !important;
+            }
+            .container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
-<body>
-    <div class="container" id="captureArea">
-        <!-- Added back link -->
-        <a href="https://devjmi.github.io/Devender/Insurance-Tools-Hub.html" class="back-link">Back to Insurance Tools Hub</a>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-md" id="captureArea">
+        <a href="Insurance-Tools-Hub.html" class="block text-right text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors mb-4">
+            ← Back to Tools Hub
+        </a>
         
-        <h3>Motor Commission Calculator</h3>
+        <h3 class="text-2xl font-bold mb-6 text-gray-800 text-center border-b pb-2">Motor Commission Calculator</h3>
+        
         <form id="commissionForm">
-            <label>Own Damage (OD) Details</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Own Damage (OD) Details</label>
             <div class="input-group">
-                <div class="input-item">
-                    <label for="odPremium">Premium (₹)</label>
-                    <input type="number" id="odPremium" value="0" min="0" step="1">
+                <div>
+                    <label for="odPremium" class="block text-xs font-medium text-gray-500 mb-1">Premium (₹)</label>
+                    <input type="number" id="odPremium" value="0" min="0" step="1" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm">
                 </div>
-                <div class="input-item">
-                    <label for="odCommissionRate">Rate (%)</label>
-                    <input type="number" id="odCommissionRate" value="0" min="0" max="100" step="0.01">
+                <div>
+                    <label for="odCommissionRate" class="block text-xs font-medium text-gray-500 mb-1">Rate (%)</label>
+                    <input type="number" id="odCommissionRate" value="0" min="0" max="100" step="0.01" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm">
                 </div>
             </div>
 
-            <label>Third Party (TP) Details</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Third Party (TP) Details</label>
             <div class="input-group">
-                <div class="input-item">
-                    <label for="tpPremium">Premium (₹)</label>
-                    <input type="number" id="tpPremium" value="0" min="0" step="1">
+                <div>
+                    <label for="tpPremium" class="block text-xs font-medium text-gray-500 mb-1">Premium (₹)</label>
+                    <input type="number" id="tpPremium" value="0" min="0" step="1" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm">
                 </div>
-                <div class="input-item">
-                    <label for="tpCommissionRate">Rate (%)</label>
-                    <input type="number" id="tpCommissionRate" value="0" min="0" max="100" step="0.01">
+                <div>
+                    <label for="tpCommissionRate" class="block text-xs font-medium text-gray-500 mb-1">Rate (%)</label>
+                    <input type="number" id="tpCommissionRate" value="0" min="0" max="100" step="0.01" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm">
                 </div>
             </div>
             
             <div class="tds-rate-group">
                 <div>
-                    <div class="tds-checkbox-group">
-                        <input type="checkbox" id="changeTdsCheckbox">
-                        <label for="changeTdsCheckbox">Change TDS Rate</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="changeTdsCheckbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <label for="changeTdsCheckbox" class="ml-2 text-sm font-medium text-gray-700">Change TDS Rate</label>
                     </div>
                     <div class="tds-input-group" id="tdsInputGroup">
-                        <label for="tdsRate">TDS Rate (%):</label>
-                        <input type="number" id="tdsRate" value="2" min="0" max="100" step="0.01">
+                        <label for="tdsRate" class="text-xs font-medium text-gray-500 mr-2 mb-0">TDS Rate (%):</label>
+                        <input type="number" id="tdsRate" value="2" min="0" max="100" step="0.01" class="w-20 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 text-sm">
                     </div>
                 </div>
                 <div>
-                    <span id="currentTdsRate" style="color: var(--primary-color); font-weight: bold;">2%</span>
+                    <span id="currentTdsRate" class="text-indigo-600 font-semibold text-lg">2%</span>
                 </div>
             </div>
 
-            <div class="button-group">
-                <button type="button" id="calculateButton">CALCULATE</button>
-                <button type="button" id="pdfButton">GENERATE PDF</button>
+            <div class="button-group flex gap-3 mt-6">
+                <button type="button" id="calculateButton" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
+                    CALCULATE
+                </button>
+                <button type="button" id="pdfButton" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300">
+                    GENERATE PDF
+                </button>
             </div>
         </form>
 
-        <div id="result" class="result">
-            <div class="result-item">Total Commission: <strong id="totalCommissionValue">₹0.00</strong></div>
-            <div class="result-item">TDS Deducted: <strong id="tdsAmountValue">₹0.00</strong></div>
-            <div class="result-item">Net Commission: <strong id="netCommissionValue">₹0.00</strong></div>
+        <div id="result" class="result mt-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-600 font-medium">Total Commission:</span>
+                <strong id="totalCommissionValue" class="text-lg text-indigo-600 font-bold">₹0.00</strong>
+            </div>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-600 font-medium">TDS Deducted:</span>
+                <strong id="tdsAmountValue" class="text-lg text-red-600 font-bold">₹0.00</strong>
+            </div>
+            <hr class="my-3 border-gray-300">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-800 font-semibold text-xl">Net Commission:</span>
+                <strong id="netCommissionValue" class="text-2xl text-emerald-600 font-extrabold">₹0.00</strong>
+            </div>
         </div>
     </div>
 
     <script>
+    // NOTE: The JavaScript is largely unchanged to preserve functionality.
     document.addEventListener('DOMContentLoaded', function () {
-        // Get all input and output elements
+        // ... (existing JS code) ...
         const odPremiumInput = document.getElementById('odPremium');
         const odCommissionRateInput = document.getElementById('odCommissionRate');
         const tpPremiumInput = document.getElementById('tpPremium');
@@ -261,6 +170,15 @@
             }
         }
 
+        // Helper function to format numbers as Indian Rupees
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2,
+            }).format(amount);
+        }
+
         function calculateCommission() {
             // 1. Get and parse all values
             const odPremium = parseFloat(odPremiumInput.value) || 0;
@@ -270,7 +188,7 @@
             const tdsRate = parseFloat(tdsRateInput.value) || 2;
 
             // Update current TDS rate display
-            currentTdsRate.textContent = `${tdsRate}%`;
+            currentTdsRate.textContent = `${tdsRate.toFixed(2).replace(/\.?0+$/, '')}%`;
 
             // 2. Perform Calculations
             const odCommission = odPremium * (odCommissionRate / 100);
@@ -283,41 +201,36 @@
             
             const netCommission = totalCommission - tdsAmount;
 
-            // 3. Display Results, formatted to two decimal places
-            totalCommissionValue.textContent = `₹${totalCommission.toFixed(2)}`;
-            tdsAmountValue.textContent = `₹${tdsAmount.toFixed(2)}`;
-            netCommissionValue.textContent = `₹${netCommission.toFixed(2)}`;
+            // 3. Display Results
+            totalCommissionValue.textContent = formatCurrency(totalCommission);
+            tdsAmountValue.textContent = formatCurrency(tdsAmount);
+            netCommissionValue.textContent = formatCurrency(netCommission);
         }
 
         /**
-         * UPDATED PDF GENERATION METHOD: 
-         * Uses html2canvas to capture the visible content (#captureArea) and 
-         * jsPDF to put the resulting image into a PDF document, ensuring a faithful visual representation.
+         * PDF GENERATION METHOD: Captures the visible content for PDF.
          */
         function generatePDF() {
-            // Check if jsPDF and html2canvas are loaded
             if (typeof window.jspdf === 'undefined' || typeof window.html2canvas === 'undefined') {
-                alert('Error: Required libraries (jsPDF or html2canvas) not fully loaded. Please wait a moment or check your internet connection.');
+                alert('Error: Required libraries (jsPDF or html2canvas) not fully loaded.');
                 return;
             }
 
+            calculateCommission(); // Ensure latest results are on screen
             const { jsPDF } = window.jspdf;
 
-            // 1. Capture the HTML element using html2canvas
             html2canvas(captureArea, { scale: 2 }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgWidth = 190; // Fit the image width to 190mm (with 10mm margins on A4)
+                const imgWidth = 190; 
                 const pageHeight = pdf.internal.pageSize.getHeight();
                 const imgHeight = canvas.height * imgWidth / canvas.width;
                 let heightLeft = imgHeight;
-                let position = 10; // Start at 10mm from the top (for 10mm margin)
+                let position = 10; 
 
-                // 2. Add the image to the PDF
                 pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
                 heightLeft -= pageHeight;
 
-                // Handle multi-page content (if the calculator grew vertically)
                 while (heightLeft >= 0) {
                     position = heightLeft - imgHeight;
                     pdf.addPage();
@@ -325,9 +238,7 @@
                     heightLeft -= pageHeight;
                 }
 
-                // 3. Save the PDF
                 const now = new Date();
-                // Use a standard format for the filename (e.g., YYYY-MM-DD)
                 const dateStr = now.toLocaleDateString('en-CA'); 
                 pdf.save(`Commission_Calculation_${dateStr}.pdf`);
             });
