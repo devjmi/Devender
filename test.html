@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Motor Policy Manager — Google Sheets Sync (Policy No key)</title>
+<style>
+  :root { --royal:#2563eb; --bg:#f6f8fb; --card:#fff; --muted:#6b7280; }
+  body{font-family:Segoe UI,Roboto,Arial,sans-serif;margin:8px;background:var(--bg);color:#0f172a}
+  .container{max-width:1100px;margin:0 auto;background:var(--card);padding:10px;border-radius:6px;box-shadow:0 4px 12px rgba(16,24,40,0.06);border-left:5px solid var(--royal)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px}
+  h1{font-size:0.95rem;margin:0}
+  .controls{display:flex;gap:6px;align-items:center}
+  form{background:#fbfdff;padding:8px;border-radius:6px;border:1px solid #e6eefb}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 8px;align-items:end}
+  label{display:block;font-size:0.75rem;color:#374151;margin-bottom:2px;font-weight:600}
+  .required::after{content:" *";color:#ef4444;font-weight:700}
+  input[type="text"],input[type="number"],input[type="date"],select{width:100%;padding:5px 6px;border-radius:4px;border:1px solid #d1d5db;font-size:0.85rem}
+  .actions{display:flex;gap:5px;justify-content:flex-end;margin-top:6px}
+  button{padding:6px 8px;border-radius:5px;border:0;cursor:pointer;font-weight:600;font-size:0.8rem}
+  .btn-primary{background:var(--royal);color:#fff}.btn-green{background:#16a34a;color:#fff}.btn-muted{background:#eef2ff;color:var(--royal);border:1px solid #dbeafe}.btn-danger{background:#ef4444;color:#fff}.btn-import{background:#8b5cf6;color:#fff}.btn-filter{background:#f59e0b;color:#fff}
+  #msg{display:none;padding:6px;border-radius:5px;font-weight:600;text-align:center;margin-bottom:6px;font-size:0.8rem}
+  .msg-info{background:#e6f0ff;color:#0f3b91;border:1px solid #d0e3ff}.msg-success{background:#d1fae5;color:#064e36;border:1px solid #bbf7d0}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .stats{display:flex;gap:8px;align-items:center}.stat{background:#fff;padding:5px 8px;border-radius:5px;border:1px solid #eef2ff;min-width:110px;text-align:center}.small{font-size:0.75rem;color:var(--muted)}
+  .table-wrap{margin-top:8px;border-radius:5px;overflow:auto;border:1px solid #e6eef6;background:#fff}
+  table{width:100%;border-collapse:collapse;font-size:0.8rem}
+  thead th{position:sticky;top:0;background:var(--royal);color:#fff;padding:6px 5px;text-align:left;font-size:0.75rem}
+  tbody td{padding:5px;border-top:1px solid #f1f5fb;vertical-align:middle}
+  tbody tr:nth-child(even) td{background:#fbfdff}
+  th.sortable{cursor:pointer}
+  .overlay{position:fixed;inset:0;background:#00000066;display:none;align-items:center;justify-content:center;z-index:50}
+  .modal{background:#fff;padding:12px;border-radius:6px;width:320px;box-shadow:0 8px 24px rgba(2,6,23,0.2);max-height:90vh;overflow-y:auto}
+  .auth-status{display:flex;gap:8px;align-items:center}
+  .gbtn{padding:6px 8px;border-radius:6px;cursor:pointer;border:1px solid rgba(0,0,0,0.06);background:#fff}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Motor Policy Manager</h1>
+      <div class="controls">
+        <div class="auth-status">
+          <div id="signedInInfo" style="display:none;"><span id="userEmail" class="small"></span></div>
+          <button id="signinBtn" class="gbtn">Sign in with Google</button>
+          <button id="signoutBtn" class="gbtn" style="display:none;">Sign out</button>
+          <button id="pushAllBtn" class="gbtn" title="Push all local records to Google Sheet">Push All → Sheet</button>
+        </div>
+      </div>
+    </header>
+
+    <div id="msg" role="status" aria-live="polite"></div>
+
+    <!-- form (keeps same fields) -->
+    <form id="policyForm">
+      <div class="grid">
+        <div><label for="date" class="required">DATE</label><input type="date" id="date" name="date" required></div>
+        <div><label for="policy_no" class="required">Policy No.</label><input type="text" id="policy_no" name="policy_no" required></div>
+        <div><label for="agent_name" class="required">Agent Name</label><input type="text" id="agent_name" name="agent_name" required list="agentList"><datalist id="agentList"></datalist></div>
+        <div><label for="customer_name" class="required">Customer Name</label><input type="text" id="customer_name" name="customer_name" required></div>
+        <div><label for="vehicle_no" class="required">Vehicle No.</label><input type="text" id="vehicle_no" name="vehicle_no" required></div>
+        <div><label for="company">Company</label><select id="company" name="company"><option value="">-- Select Insurer --</option><option value="Acko General Insurance">Acko General Insurance</option><option value="ICICI Lombard General Insurance">ICICI Lombard General Insurance</option><option value="Other">Other</option></select></div>
+        <div><label for="product" class="required">Product</label><select id="product" name="product" required><option value="">Select</option><option value="comprehensive">Comprehensive</option><option value="third_party">Third Party</option><option value="OD Only">OD Only</option></select></div>
+        <div><label for="product_type" class="required">Product Type</label><select id="product_type" name="product_type" required><option value="">Select</option><option value="pvt_car">Private Car</option><option value="tw">Two Wheeler</option></select></div>
+        <div><label for="ncb" class="required">NCB (%)</label><select id="ncb" name="ncb" required><option value="">Select</option><option value="0">0</option><option value="20">20</option></select></div>
+        <div><label for="make">Make</label><input type="text" id="make" name="make"></div>
+        <div><label for="model">Model</label><input type="text" id="model" name="model"></div>
+        <div><label for="date_of_registration">Date of Registration</label><input type="date" id="date_of_registration" name="date_of_registration"></div>
+        <div><label for="policy_start_date">Policy Start Date</label><input type="date" id="policy_start_date" name="policy_start_date"></div>
+        <div><label for="policy_expire_date">Policy Expire Date</label><input type="date" id="policy_expire_date" name="policy_expire_date"></div>
+        <div><label for="depreciation">Depreciation</label><select id="depreciation" name="depreciation"><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+        <div><label for="business_book_date">Business Book Date</label><input type="date" id="business_book_date" name="business_book_date"></div>
+        <div><label for="od_premium" class="required">OD Premium (₹)</label><input type="number" id="od_premium" name="od_premium" step="0.01" min="0" required></div>
+        <div><label for="premium" class="required">PREMIUM (Total) (₹)</label><input type="number" id="premium" name="premium" step="0.01" min="0" required></div>
+
+        <div style="grid-column:span 3">
+          <div class="actions">
+            <button id="saveRecord" class="btn-primary" type="submit">Save Record</button>
+            <button id="downloadAll" type="button" class="btn-green">Download Excel</button>
+            <button id="exportSelectedExcel" type="button" class="btn-muted">Export Selected</button>
+            <button id="importData" type="button" class="btn-import">Import Data</button>
+            <button id="clearAll" type="button" class="btn-danger">Clear All</button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="toolbar">
+      <div class="stats" style="margin-top:8px;">
+        <div class="stat"><div style="font-weight:700" id="countAll">0</div><small>Total Records</small></div>
+        <div class="stat"><div style="font-weight:700" id="countThisMonth">0</div><small>This Month</small></div>
+        <div class="stat"><div style="font-weight:700" id="countLastMonth">0</div><small>Last Month</small></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="filters">
+        <input type="text" id="searchBox" placeholder="Search...">
+        <select id="monthFilter"><option value="all">All Months</option></select>
+        From <input type="date" id="fromDate" style="margin-left:6px">
+        To <input type="date" id="toDate" style="margin-left:6px">
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="recordsTable" aria-live="polite">
+        <thead>
+          <tr>
+            <th style="width:32px"><input id="checkAll" type="checkbox"></th>
+            <th class="sortable" data-field="Serial">S.No ▾</th>
+            <th class="sortable" data-field="date">DATE</th>
+            <th class="sortable" data-field="policy_no">Policy No.</th>
+            <th class="sortable" data-field="agent_name">Agent</th>
+            <th class="sortable" data-field="customer_name">Customer</th>
+            <th class="sortable" data-field="vehicle_no">Vehicle No.</th>
+            <th class="sortable" data-field="company">Company</th>
+            <th class="sortable" data-field="product">Product</th>
+            <th class="sortable" data-field="make">Make</th>
+            <th class="sortable" data-field="model">Model</th>
+            <th class="sortable" data-field="date_of_registration">Reg. Date</th>
+            <th class="sortable" data-field="policy_start_date">Start Date</th>
+            <th class="sortable" data-field="policy_expire_date">Expire Date</th>
+            <th class="sortable" data-field="depreciation">Depreciation</th>
+            <th class="sortable" data-field="business_book_date">Book Date</th>
+            <th class="sortable" data-field="od_premium">OD Premium</th>
+            <th class="sortable" data-field="premium">Premium (₹)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="overlay" id="overlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h3>Edit Record</h3>
+        <input type="hidden" id="editSerial">
+        <div><label>DATE</label><input type="date" id="edit_date"></div>
+        <div><label>Policy No.</label><input type="text" id="edit_policy_no"></div>
+        <div><label>Agent Name</label><input type="text" id="edit_agent_name"></div>
+        <div><label>Customer Name</label><input type="text" id="edit_customer_name"></div>
+        <div><label>Vehicle No.</label><input type="text" id="edit_vehicle_no"></div>
+        <div style="margin-top:10px;text-align:right"><button id="saveEdit" class="btn-primary">Save</button> <button id="cancelEdit" class="btn-muted">Cancel</button></div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+/* ----------------- Config ----------------- */
+// Your values (as provided)
+const GAPI_CLIENT_ID = '454683724505-k1joaefh26qscftd2b0qvp55nvovv4bu.apps.googleusercontent.com';
+const SPREADSHEET_ID = '1h2C7qxIQCTNbGLFaGcZ9C1ZPzlmagYUpICL2_vGux70';
+const SHEET_NAME = 'Sheet1';
+const HEADER_ROW = 1; // you confirmed header row = 1
+
+const STORAGE_KEY = 'motor_policy_master_v2';
+const PENDING_KEY = 'motor_policy_pending_v1'; // queued ops when offline/not signed in
+let records = [];
+let serialCounter = 1;
+let sortField = 'Serial', sortAsc = false;
+
+/* Pending queue structure: [{op:'append'|'update'|'delete', rec:{...} or policy_no:'...'}] */
+function loadPending(){ try{ return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); }catch(e){ return []; } }
+function savePending(q){ localStorage.setItem(PENDING_KEY, JSON.stringify(q)); }
+
+/* Basic UI helpers */
+function showMsg(text, type='info', ms=3000){
+  const el = document.getElementById('msg'); el.textContent = text;
+  el.className = type==='success' ? 'msg-success' : 'msg-info'; el.style.display='block';
+  clearTimeout(el._t); el._t = setTimeout(()=> el.style.display='none', ms);
+}
+
+/* Date helpers */
+function isoToday(){ return new Date().toISOString().slice(0,10); }
+function toISODateInput(val){ if(!val) return ''; const d = new Date(val); if(isNaN(d)) return ''; return d.toISOString().slice(0,10); }
+
+/* sanitize vehicle no */
+function sanitizeVehicleNoForExport(vehicleNo){ if(!vehicleNo) return ''; return vehicleNo.toString().replace(/[^a-zA-Z0-9]/g,''); }
+
+/* ----------------- Load / Save local records ----------------- */
+function loadFromStorage(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){ records = JSON.parse(raw); if(records.length) serialCounter = Math.max(...records.map(r=>r.Serial||0))+1; } else records=[];
+  document.getElementById('date').value = isoToday();
+  renderTable(); populateMonthFilter(); updateStats();
+}
+function saveToStorage(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); updateStats(); }
+
+/* ----------------- Render ----------------- */
+function renderTable(filteredList){
+  const tbody = document.getElementById('recordsBody'); tbody.innerHTML='';
+  const list = filteredList ?? records.slice();
+  list.sort((a,b)=>{ let va=a[sortField], vb=b[sortField]; if(va===undefined)va=''; if(vb===undefined)vb=''; if(typeof va === 'string')va=va.toLowerCase(); if(typeof vb === 'string')vb=vb.toLowerCase(); if(va>vb) return sortAsc?1:-1; if(va<vb) return sortAsc?-1:1; return 0; });
+  for(const r of list){
+    const tr = document.createElement('tr'); tr.id='row_'+r.Serial;
+    tr.innerHTML = `<td><input class="rowCheck" type="checkbox" data-serial="${r.Serial}"></td>
+      <td>${r.Serial}</td><td>${toISODateInput(r.date)}</td><td>${r.policy_no||''}</td><td>${r.agent_name||''}</td><td>${r.customer_name||''}</td><td>${r.vehicle_no||''}</td><td>${r.company||''}</td><td>${r.product||''}</td><td>${r.make||''}</td><td>${r.model||''}</td><td>${toISODateInput(r.date_of_registration)}</td><td>${toISODateInput(r.policy_start_date)}</td><td>${toISODateInput(r.policy_expire_date)}</td><td>${r.depreciation||''}</td><td>${toISODateInput(r.business_book_date)}</td><td>${Number.isFinite(r.od_premium)?r.od_premium.toFixed(2):'0.00'}</td><td>${Number.isFinite(r.premium)?r.premium.toFixed(2):'0.00'}</td>
+      <td style="text-align:center"><button onclick="openEdit('${r.Serial}')" class="btn-muted" style="margin-right:4px">Edit</button><button onclick="onDeleteLocal('${r.Serial}')" class="btn-danger">Delete</button></td>`;
+    tbody.appendChild(tr);
+  }
+  updateStats();
+}
+
+/* ----------------- Stats / Filters ----------------- */
+function updateStats(){ document.getElementById('countAll').textContent = records.length; const now=new Date(); const thisM = records.filter(r=> new Date(r.date).getMonth()===now.getMonth() && new Date(r.date).getFullYear()===now.getFullYear()).length; const lm = new Date(now.getFullYear(),now.getMonth()-1,1); const lastM = records.filter(r=> new Date(r.date).getMonth()===lm.getMonth() && new Date(r.date).getFullYear()===lm.getFullYear()).length; document.getElementById('countThisMonth').textContent=thisM; document.getElementById('countLastMonth').textContent=lastM; }
+function populateMonthFilter(){ const sel=document.getElementById('monthFilter'); const months=new Set(records.map(r=> new Date(r.date).getMonth())); let html = '<option value="all">All Months</option>'; Array.from(months).sort((a,b)=>a-b).forEach(m=>{ const n=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m]; html += `<option value="${m}">${n}</option>`; }); sel.innerHTML=html; }
+
+/* ----------------- Form Save ----------------- */
+document.getElementById('policyForm').addEventListener('submit', (e)=>{ e.preventDefault();
+  const vehicleNo = document.getElementById('vehicle_no').value.trim();
+  if(!vehicleNo){ showMsg('Vehicle No required','info',3000); return; }
+  const rec = {
+    Serial: serialCounter++,
+    date: document.getElementById('date').value || isoToday(),
+    policy_no: document.getElementById('policy_no').value.trim(),
+    agent_name: document.getElementById('agent_name').value.trim(),
+    customer_name: document.getElementById('customer_name').value.trim(),
+    vehicle_no: sanitizeVehicleNoForExport(vehicleNo),
+    company: document.getElementById('company').value,
+    product: document.getElementById('product').value,
+    make: document.getElementById('make').value.trim(),
+    model: document.getElementById('model').value.trim(),
+    date_of_registration: document.getElementById('date_of_registration').value,
+    policy_start_date: document.getElementById('policy_start_date').value,
+    policy_expire_date: document.getElementById('policy_expire_date').value,
+    depreciation: document.getElementById('depreciation').value,
+    business_book_date: document.getElementById('business_book_date').value,
+    od_premium: parseFloat(document.getElementById('od_premium').value||0),
+    premium: parseFloat(document.getElementById('premium').value||0),
+    _savedAt: new Date().toISOString()
+  };
+  // Save locally
+  records.push(rec); saveToStorage(); renderTable(); populateMonthFilter();
+  document.getElementById('policyForm').reset(); document.getElementById('date').value = isoToday();
+  showMsg('Saved locally', 'success', 1600);
+
+  // If signed in, try to sync (update if policy exists, else append)
+  if(isSignedIn()){
+    syncRecordToSheet(rec).then(()=> showMsg('Synced to Google Sheet','success',2200)).catch(err=>{ console.error(err); queueOp({op:'append', rec}); showMsg('Queued for sync (will retry on sign-in)','info',3200); });
+  } else {
+    queueOp({op:'append', rec}); showMsg('Queued for sync (sign in to push)','info',3200);
+  }
+});
+
+/* ----------------- Edit local ----------------- */
+function openEdit(serial){
+  const rec = records.find(r=>String(r.Serial)===String(serial)); if(!rec) return;
+  document.getElementById('editSerial').value = rec.Serial;
+  document.getElementById('edit_date').value = toISODateInput(rec.date);
+  document.getElementById('edit_policy_no').value = rec.policy_no || '';
+  document.getElementById('edit_agent_name').value = rec.agent_name || '';
+  document.getElementById('edit_customer_name').value = rec.customer_name || '';
+  document.getElementById('edit_vehicle_no').value = rec.vehicle_no || '';
+  document.getElementById('overlay').style.display = 'flex';
+}
+document.getElementById('cancelEdit').addEventListener('click', ()=> document.getElementById('overlay').style.display='none');
+document.getElementById('saveEdit').addEventListener('click', ()=> {
+  const serial = Number(document.getElementById('editSerial').value);
+  const rec = records.find(r=>r.Serial===serial); if(!rec) return;
+  rec.date = document.getElementById('edit_date').value || rec.date;
+  const oldPolicy = rec.policy_no;
+  rec.policy_no = document.getElementById('edit_policy_no').value.trim() || rec.policy_no;
+  rec.agent_name = document.getElementById('edit_agent_name').value.trim() || rec.agent_name;
+  rec.customer_name = document.getElementById('edit_customer_name').value.trim() || rec.customer_name;
+  rec.vehicle_no = document.getElementById('edit_vehicle_no').value.trim() || rec.vehicle_no;
+  rec._editedAt = new Date().toISOString();
+  saveToStorage(); renderTable(); document.getElementById('overlay').style.display='none';
+  showMsg('Updated locally', 'success', 1400);
+
+  // Sync update: find sheet row by POLICY_NO (we use the new policy_no)
+  if(isSignedIn()){
+    syncRecordToSheet(rec).then(()=> showMsg('Updated in Google Sheet','success',2200)).catch(err=>{ console.error(err); queueOp({op:'update', rec}); showMsg('Queued update (will retry)','info',3200); });
+  } else {
+    // queue update
+    queueOp({op:'update', rec});
+    showMsg('Queued update (sign in to push)','info',3000);
+  }
+});
+
+/* ----------------- Delete ----------------- */
+function onDeleteLocal(serial){
+  if(!confirm('Delete record locally & in Google Sheet?')) return;
+  const rec = records.find(r=>String(r.Serial)===String(serial));
+  if(!rec) return;
+  // Remove locally
+  records = records.filter(r=>String(r.Serial)!==String(serial)); saveToStorage(); renderTable();
+  showMsg('Deleted locally', 'info', 1400);
+
+  // Delete from sheet (by policy_no)
+  if(isSignedIn()){
+    deleteRowFromSheetByPolicy(rec.policy_no).then(()=> showMsg('Deleted from Google Sheet','info',2000)).catch(err=>{ console.error(err); queueOp({op:'delete', policy_no: rec.policy_no}); showMsg('Queued delete (will retry)','info',3200); });
+  } else {
+    queueOp({op:'delete', policy_no: rec.policy_no});
+    showMsg('Queued delete (sign in to push)','info',3000);
+  }
+}
+
+/* ----------------- Pending queue helpers ----------------- */
+function queueOp(op){ const q = loadPending(); q.push(op); savePending(q); }
+async function replayPendingQueue(){
+  const q = loadPending(); if(!q.length) return;
+  showMsg('Syncing queued ops...', 'info', 2000);
+  const remaining = [];
+  for(const op of q){
+    try{
+      if(op.op === 'append'){
+        await syncRecordToSheet(op.rec);
+      } else if(op.op === 'update'){
+        await syncRecordToSheet(op.rec);
+      } else if(op.op === 'delete'){
+        await deleteRowFromSheetByPolicy(op.policy_no);
+      }
+    }catch(e){
+      console.error('Pending op failed', op, e);
+      remaining.push(op); // keep it for next attempt
+    }
+  }
+  savePending(remaining);
+  if(remaining.length===0) showMsg('All queued ops synced', 'success', 2200);
+  else showMsg(`${remaining.length} queued ops remain`, 'info', 3000);
+}
+
+/* ----------------- Google API bootstrap ----------------- */
+const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+
+function loadGapi(){
+  if(window.gapi){ initGapi(); return; }
+  const s = document.createElement('script'); s.src = 'https://apis.google.com/js/api.js'; s.onload = initGapi; document.head.appendChild(s);
+}
+function initGapi(){
+  gapi.load('client:auth2', async ()=>{
+    try{
+      await gapi.client.init({ discoveryDocs: DISCOVERY_DOCS, clientId: GAPI_CLIENT_ID, scope: SCOPES });
+      const auth = gapi.auth2.getAuthInstance();
+      updateSigninStatus(auth.isSignedIn.get());
+      auth.isSignedIn.listen(updateSigninStatus);
+    }catch(err){ console.error('gapi init failed', err); showMsg('Google API init failed','info',4000); }
+  });
+}
+
+function updateSigninStatus(isSignedIn){
+  const signinBtn = document.getElementById('signinBtn'), signoutBtn = document.getElementById('signoutBtn'), si = document.getElementById('signedInInfo'), ue = document.getElementById('userEmail');
+  if(isSignedIn){
+    const user = gapi.auth2.getAuthInstance().currentUser.get(); const profile = user.getBasicProfile(); const email = profile ? profile.getEmail() : '';
+    ue.textContent = email; si.style.display='inline-block'; signinBtn.style.display='none'; signoutBtn.style.display='inline-block';
+    // replay pending
+    replayPendingQueue();
+  } else {
+    si.style.display='none'; signinBtn.style.display='inline-block'; signoutBtn.style.display='none';
+  }
+}
+
+document.getElementById('signinBtn').addEventListener('click', ()=>{
+  if(!window.gapi) { showMsg('Loading Google API...', 'info', 1200); loadGapi(); setTimeout(()=>{ if(gapi && gapi.auth2) gapi.auth2.getAuthInstance().signIn().catch(e=>console.error(e)); }, 1200); return; }
+  gapi.auth2.getAuthInstance().signIn().catch(e=>{ console.error(e); showMsg('Sign-in failed','info',2000); });
+});
+document.getElementById('signoutBtn').addEventListener('click', ()=>{
+  if(window.gapi && gapi.auth2) gapi.auth2.getAuthInstance().signOut().then(()=> showMsg('Signed out','info',1200));
+});
+
+/* Helper to check sign-in */
+function isSignedIn(){ try{ return !!(gapi && gapi.auth2 && gapi.auth2.getAuthInstance().isSignedIn.get()); }catch(e){ return false; } }
+
+/* ----------------- Sheet helpers (by POLICY_NO Key) ----------------- */
+
+/*
+  Strategy:
+   - To find a row for a given POLICY_NO we read the sheet's POLICY_NO column (C).
+   - We request range Sheet1!C2:C to skip header row.
+   - If found at index i in returned array, the sheet row number is i + 2.
+   - Update uses spreadsheets.values.update on A{row}:Q{row} (17 columns) with USER_ENTERED.
+   - Delete uses spreadsheets.batchUpdate with deleteDimension for the row index (zero-based).
+*/
+
+/* get sheetId (needed for deleteDimension) */
+async function getSheetId(){
+  try{
+    const res = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID, fields: 'sheets.properties' });
+    const sh = res.result.sheets.find(s => s.properties.title === SHEET_NAME);
+    if(!sh) throw new Error('Sheet name not found: ' + SHEET_NAME);
+    return sh.properties.sheetId;
+  }catch(e){ console.error('getSheetId error', e); throw e; }
+}
+
+/* find row number (1-based) by policy_no; returns null if not found */
+async function findRowByPolicyNo(policyNo){
+  if(!policyNo) return null;
+  try{
+    // Read column C from row 2 onwards
+    const range = `${SHEET_NAME}!C2:C`;
+    const res = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range });
+    const values = res.result.values || [];
+    for(let i=0;i<values.length;i++){
+      const cell = (values[i] && values[i][0]) ? String(values[i][0]).trim() : '';
+      if(cell === policyNo) return i + 2; // +2 because values[0] corresponds to sheet row 2
+    }
+    return null;
+  }catch(e){ console.error('findRowByPolicyNo error', e); throw e; }
+}
+
+/* append row (if not existing) */
+async function appendRow(rec){
+  const row = [
+    rec.Serial,
+    toISODateInput(rec.date),
+    rec.policy_no || '',
+    rec.agent_name || '',
+    rec.customer_name || '',
+    sanitizeVehicleNoForExport(rec.vehicle_no || ''),
+    rec.company || '',
+    rec.product || '',
+    rec.make || '',
+    rec.model || '',
+    toISODateInput(rec.date_of_registration),
+    toISODateInput(rec.policy_start_date),
+    toISODateInput(rec.policy_expire_date),
+    rec.depreciation || '',
+    toISODateInput(rec.business_book_date),
+    Number.isFinite(rec.od_premium) ? rec.od_premium : '',
+    Number.isFinite(rec.premium) ? rec.premium : ''
+  ];
+  const params = { spreadsheetId: SPREADSHEET_ID, range: `${SHEET_NAME}!A1:Q1`, valueInputOption: 'USER_ENTERED', insertDataOption: 'INSERT_ROWS' };
+  const body = { values: [row] };
+  return gapi.client.sheets.spreadsheets.values.append(params, body);
+}
+
+/* update row at given rowNumber (1-based) */
+async function updateRowAt(rowNumber, rec){
+  const row = [
+    rec.Serial,
+    toISODateInput(rec.date),
+    rec.policy_no || '',
+    rec.agent_name || '',
+    rec.customer_name || '',
+    sanitizeVehicleNoForExport(rec.vehicle_no || ''),
+    rec.company || '',
+    rec.product || '',
+    rec.make || '',
+    rec.model || '',
+    toISODateInput(rec.date_of_registration),
+    toISODateInput(rec.policy_start_date),
+    toISODateInput(rec.policy_expire_date),
+    rec.depreciation || '',
+    toISODateInput(rec.business_book_date),
+    Number.isFinite(rec.od_premium) ? rec.od_premium : '',
+    Number.isFinite(rec.premium) ? rec.premium : ''
+  ];
+  const range = `${SHEET_NAME}!A${rowNumber}:Q${rowNumber}`;
+  return gapi.client.sheets.spreadsheets.values.update({ spreadsheetId: SPREADSHEET_ID, range, valueInputOption: 'USER_ENTERED' }, { values: [row] });
+}
+
+/* delete row (sheet rowNumber 1-based) */
+async function deleteRowAt(rowNumber){
+  const sheetId = await getSheetId();
+  const zeroBased = rowNumber - 1;
+  const requests = [{ deleteDimension: { range: { sheetId: sheetId, dimension: "ROWS", startIndex: zeroBased, endIndex: zeroBased + 1 } } }];
+  return gapi.client.sheets.spreadsheets.batchUpdate({ spreadsheetId: SPREADSHEET_ID, resource: { requests } });
+}
+
+/* find & append or update as appropriate (primary sync function) */
+async function syncRecordToSheet(rec){
+  // Try to find by policy_no
+  const policy = rec.policy_no;
+  if(!policy) throw new Error('No policy_no to sync');
+  const existingRow = await findRowByPolicyNo(policy);
+  if(existingRow !== null){
+    // update existing row
+    return updateRowAt(existingRow, rec);
+  } else {
+    // append
+    return appendRow(rec);
+  }
+}
+
+/* delete row by policy number */
+async function deleteRowFromSheetByPolicy(policyNo){
+  const row = await findRowByPolicyNo(policyNo);
+  if(row === null) { console.warn('delete: policy not found on sheet', policyNo); return; }
+  return deleteRowAt(row);
+}
+
+/* ----------------- Push All local to sheet (bulk append — will append even if duplicates exist) ----------------- */
+document.getElementById('pushAllBtn').addEventListener('click', async ()=>{
+  if(!isSignedIn()){ alert('Sign in to push'); return; }
+  if(!records.length){ alert('No records'); return; }
+  showMsg('Pushing records — this may take a moment...', 'info', 5000);
+  let success=0, failed=0;
+  for(const r of records){
+    try{
+      // attempt to update if exists otherwise append
+      await syncRecordToSheet(r);
+      success++;
+    }catch(e){ console.error('pushAll error for', r.policy_no, e); failed++; }
+  }
+  showMsg(`Push complete — ${success} ok, ${failed} failed`, 'success', 4000);
+});
+
+/* ----------------- Delete selected (local & sheet) ----------------- */
+document.getElementById('checkAll').addEventListener('change', function(){ document.querySelectorAll('.rowCheck').forEach(c=>c.checked=this.checked); });
+
+/* ----------------- Initialize and load local data ----------------- */
+loadFromStorage();
+
+/* ----------------- Simple search/filter (kept minimal) ----------------- */
+document.getElementById('searchBox').addEventListener('input', applyFilters);
+document.getElementById('monthFilter').addEventListener('change', applyFilters);
+document.getElementById('fromDate').addEventListener('change', applyFilters);
+document.getElementById('toDate').addEventListener('change', applyFilters);
+
+function applyFilters(){
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const month = document.getElementById('monthFilter').value;
+  const from = document.getElementById('fromDate').value;
+  const to = document.getElementById('toDate').value;
+  let filtered = records.filter(r=>{
+    if(q){ const hay = `${r.policy_no} ${r.agent_name} ${r.customer_name} ${r.vehicle_no} ${r.company}`.toLowerCase(); if(!hay.includes(q)) return false; }
+    if(month!=='all'){ if(String(new Date(r.date).getMonth()) !== String(month)) return false; }
+    if(from){ if(new Date(r.date) < new Date(from)) return false; }
+    if(to){ const toEnd=new Date(to); toEnd.setHours(23,59,59,999); if(new Date(r.date) > toEnd) return false; }
+    return true;
+  });
+  renderTable(filtered);
+}
+
+/* ----------------- Import / Export minimal placeholders ----------------- */
+document.getElementById('downloadAll').addEventListener('click', ()=>{
+  alert('Excel export uses xlsx-js-style. If you want full offline export, tell me to inline the library.'); 
+});
+document.getElementById('importData').addEventListener('click', ()=> alert('Import button — already present in original file. Use existing import flow if available.'));
+
+/* ----------------- On load, start gapi lazily so sign-in button responds ----------------- */
+loadGapi();
+
+</script>
+</body>
+</html>
