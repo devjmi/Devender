@@ -168,6 +168,10 @@ so you can easily find where the library is.
     box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
   }
 
+  /* Add spinner animation for OCR loading */
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
   @media (max-width:900px) {
     .grid { grid-template-columns: 1fr; }
     .col-2, .col-3 { grid-column: span 1; }
@@ -206,6 +210,17 @@ so you can easily find where the library is.
       <h1>Motor Policy Manager</h1>
       <div class="controls">
         <div class="small">Serial: auto-generated &nbsp; • &nbsp; Royal Blue headers</div>
+        
+        <!-- Auto-Fill Button with Hidden Input -->
+        <div style="margin-left: 15px; display:flex; align-items:center; gap:5px;">
+            <input type="file" id="ocrUpload" accept="image/*,application/pdf" style="display:none">
+            <button type="button" class="btn-import" style="background:#ec4899;" onclick="document.getElementById('ocrUpload').click()">
+              ✨ Auto-Fill from Policy
+            </button>
+            <span id="ocrLoader" style="display:none; font-size:0.8rem; color:#ec4899; font-weight:bold;">
+               Scanning... <span class="spin">↻</span>
+            </span>
+        </div>
       </div>
     </header>
 
@@ -284,6 +299,7 @@ so you can easily find where the library is.
             <option value="Reliance General Insurance">Reliance General Insurance</option>
             <option value="Royal Sundaram General Insurance">Royal Sundaram General Insurance</option>
             <option value="SBI General Insurance">SBI General Insurance</option>
+            <option value="Go Digit General Insurance Limited">Go Digit General Insurance Limited</option>
             <option value="Shriram General Insurance">Shriram General Insurance</option>
             <option value="Tata AIG General Insurance">Tata AIG General Insurance</option>
             <option value="United India Insurance">United India Insurance</option>
@@ -306,10 +322,11 @@ so you can easily find where the library is.
           <label for="product_type" class="required">Product Type</label>
           <select id="product_type" name="product_type" required>
             <option value="">Select</option>
-            <option value="pvt_car">Private Car</option>
-            <option value="tw">Two Wheeler</option>
-            <option value="com_veh">Commercial</option>
-            <option value="misd">Misd</option>
+            <option value="Private_Car">Private Car</option>
+            <option value="Two_Wheeler">Two Wheeler</option>
+            <option value="Commercial">Commercial</option>
+            <option value="School_Bus">School Bus</option>
+            <option value="Misd">Misd</option>
           </select>
           <div id="product_type-error" class="error-message"></div>
         </div>
@@ -617,6 +634,238 @@ const baseAgentList = [
 
 // fields order for export - updated to include NCB, PRODUCT_TYPE, and PORTAL_NAME
 const exportFields = ['SERIAL','DATE','POLICY_NO','PORTAL_NAME','AGENT_NAME','CUSTOMER_NAME','VEHICLE_NO','COMPANY','PRODUCT','NCB','PRODUCT_TYPE','MAKE','MODEL','DATE_OF_REGISTRATION','POLICY_START_DATE','POLICY_EXPIRE_DATE','DEPRECIATION','BUSINESS_BOOK_DATE','OD_PREMIUM','PREMIUM'];
+
+/* ------------------ OCR Auto-Fill Logic ------------------ */
+// Note: For environment that doesn't auto-inject, prompt user
+let apiKey = "AIzaSyAMejaEnW3ppUJKDL2yQu7moUOZvTx-IRw"; 
+
+document.getElementById('ocrUpload').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Ensure we have an API Key
+  if (!apiKey) {
+    const userKey = prompt("Please enter your Google Gemini API Key to use the Auto-Fill feature:\n(It will be stored in memory until you refresh)");
+    if (userKey) {
+      apiKey = userKey.trim();
+    } else {
+      // User cancelled
+      e.target.value = ''; 
+      return;
+    }
+  }
+
+  const loader = document.getElementById('ocrLoader');
+  loader.style.display = 'inline-block';
+  showMsg("Scanning document... please wait", "info", 3000);
+  
+  try {
+    // 1. Convert to Base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // 2. Prepare Prompt (UPDATED)
+    const promptText = "Perform Optical Character Recognition (OCR) on this motor insurance policy document. Strictly extract the following details: Policy Number, Insured Name, Vehicle Registration Number, Policy Start Date, Policy End Date, Insurer Name, No Claim Bonus (NCB %), Depreciation Cover status (Zero Dep), Policy Type (Comprehensive vs Third Party), Vehicle Class, Vehicle Make, Vehicle Model, Business Book Date (or Policy Issue Date), Total Premium Amount, and Date of Registration. Return the result as a single, strict JSON object matching the schema: {PolicyNumber, InsuredName, VehicleRegistrationNumber, PolicyStartDate, PolicyEndDate, InsurerName, NCB, DepreciationCover, PolicyType, VehicleClass, Make, Model, BusinessBookDate, TotalPremium, DateOfRegistration}. For dates use DD-MM-YYYY format. If not found use 'NOT FOUND'.";
+
+    // 3. Call Gemini API
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: promptText }, { inlineData: { mimeType: file.type, data: base64 } }]
+        }],
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: "OBJECT",
+                properties: {
+                    PolicyNumber: { type: "STRING" },
+                    InsuredName: { type: "STRING" },
+                    VehicleRegistrationNumber: { type: "STRING" },
+                    PolicyStartDate: { type: "STRING" },
+                    PolicyEndDate: { type: "STRING" },
+                    InsurerName: { type: "STRING" },
+                    NCB: { type: "STRING" },
+                    DepreciationCover: { type: "STRING" },
+                    PolicyType: { type: "STRING" },
+                    VehicleClass: { type: "STRING" },
+                    // NEW FIELDS
+                    Make: { type: "STRING" },
+                    Model: { type: "STRING" },
+                    BusinessBookDate: { type: "STRING" },
+                    TotalPremium: { type: "STRING" },
+                    DateOfRegistration: { type: "STRING" }
+                }
+            }
+        }
+      })
+    });
+
+    if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.message || "API Error: " + response.statusText);
+    }
+    
+    const result = await response.json();
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error("No data extracted from document");
+    
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch (e) {
+        // Fallback: sometimes models wrap json in markdown code blocks
+        const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        data = JSON.parse(cleaned);
+    }
+
+    populateFromOCR(data);
+    showMsg("Policy details auto-filled successfully!", "success", 3000);
+
+  } catch (err) {
+    console.error(err);
+    showMsg("OCR Failed: " + err.message, "error", 4000);
+    if(err.message.includes("400") || err.message.includes("API Key")) {
+        alert("Invalid API Key or Request. Please check your key.");
+        apiKey = ""; // Reset key so user can try again
+    }
+  } finally {
+    loader.style.display = 'none';
+    e.target.value = ''; // reset input so same file can be selected again
+  }
+});
+
+function populateFromOCR(data) {
+    console.log("Extracted Data:", data);
+    
+    // Helper: Parse DD-MM-YYYY to YYYY-MM-DD for HTML Date inputs
+    const parseDate = (dateStr) => {
+        if (!dateStr || dateStr === 'NOT FOUND' || dateStr === 'N/A') return '';
+        // Handle DD-MM-YYYY, DD/MM/YYYY, or YYYY-MM-DD
+        const parts = dateStr.split(/[-/]/);
+        if (parts.length === 3) {
+            // If year is last (DD-MM-YYYY)
+            if (parts[2].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            // If year is first (YYYY-MM-DD)
+            if (parts[0].length === 4) return `${parts[0]}-${parts[1]}-${parts[2]}`;
+        }
+        return '';
+    };
+
+    // Helper: Clean currency string to float
+    const parseCurrency = (str) => {
+        if (!str || str === 'NOT FOUND') return '';
+        // Remove commas, currency symbols, etc.
+        const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+        return isNaN(num) ? '' : num;
+    };
+
+    // 1. Basic Fields
+    if (data.PolicyNumber && data.PolicyNumber !== 'NOT FOUND') 
+        document.getElementById('policy_no').value = data.PolicyNumber;
+
+    if (data.InsuredName && data.InsuredName !== 'NOT FOUND') 
+        document.getElementById('customer_name').value = data.InsuredName;
+
+    if (data.VehicleRegistrationNumber && data.VehicleRegistrationNumber !== 'NOT FOUND') {
+        // Reuse existing sanitizer
+        const vNo = sanitizeVehicleNo(data.VehicleRegistrationNumber);
+        document.getElementById('vehicle_no').value = vNo;
+    }
+
+    // 2. Dates
+    const sDate = parseDate(data.PolicyStartDate);
+    const eDate = parseDate(data.PolicyEndDate);
+    if(sDate) document.getElementById('policy_start_date').value = sDate;
+    if(eDate) document.getElementById('policy_expire_date').value = eDate;
+
+    // 3. New Fields Mapping
+    if (data.Make && data.Make !== 'NOT FOUND')
+        document.getElementById('make').value = data.Make;
+
+    if (data.Model && data.Model !== 'NOT FOUND')
+        document.getElementById('model').value = data.Model;
+
+    if (data.TotalPremium && data.TotalPremium !== 'NOT FOUND')
+        document.getElementById('premium').value = parseCurrency(data.TotalPremium);
+
+    const regDate = parseDate(data.DateOfRegistration);
+    if (regDate) document.getElementById('date_of_registration').value = regDate;
+
+    const bookDate = parseDate(data.BusinessBookDate);
+    if (bookDate) document.getElementById('business_book_date').value = bookDate;
+
+
+    // 4. NCB Mapping (Find exact or closest match)
+    if (data.NCB && data.NCB !== 'NOT FOUND') {
+        const ncbVal = data.NCB.replace(/[^0-9]/g, ''); // extract numbers only
+        const ncbSelect = document.getElementById('ncb');
+        // Try to find a matching option
+        for(let opt of ncbSelect.options) {
+            if(opt.value === ncbVal) {
+                ncbSelect.value = ncbVal;
+                break;
+            }
+        }
+    }
+
+    // 5. Depreciation Mapping
+    if (data.DepreciationCover && data.DepreciationCover !== 'NOT FOUND') {
+        const dep = data.DepreciationCover.toLowerCase();
+        const depSelect = document.getElementById('depreciation');
+        if (dep.includes('zero') || dep.includes('yes') || dep.includes('package')) {
+             depSelect.value = 'yes';
+        } else {
+             depSelect.value = 'no';
+        }
+    }
+
+    // 6. Product Type (Comp vs TP)
+    if (data.PolicyType && data.PolicyType !== 'NOT FOUND') {
+        const pType = data.PolicyType.toLowerCase();
+        const prodSelect = document.getElementById('product');
+        if (pType.includes('comprehensive') || pType.includes('package') || pType.includes('od')) {
+            prodSelect.value = 'comprehensive';
+        } else if (pType.includes('third') || pType.includes('liability')) {
+            prodSelect.value = 'third_party';
+        }
+    }
+
+    // 7. Vehicle Class Mapping
+    if (data.VehicleClass && data.VehicleClass !== 'NOT FOUND') {
+        const vClass = data.VehicleClass.toLowerCase();
+        const typeSelect = document.getElementById('product_type');
+        if (vClass.includes('two') || vClass.includes('bike') || vClass.includes('scooter')) {
+            typeSelect.value = 'tw';
+        } else if (vClass.includes('private') || vClass.includes('car')) {
+            typeSelect.value = 'pvt_car';
+        } else if (vClass.includes('commercial') || vClass.includes('bus') || vClass.includes('truck')) {
+            typeSelect.value = 'com_veh';
+        }
+    }
+
+    // 8. Company Name (Fuzzy Match)
+    if (data.InsurerName && data.InsurerName !== 'NOT FOUND') {
+        const insurer = data.InsurerName.toLowerCase().replace('general insurance', '').trim();
+        const companySelect = document.getElementById('company');
+        let bestMatchIndex = 0;
+        
+        // Iterate options to find best substring match
+        for (let i = 1; i < companySelect.options.length; i++) { // skip index 0 (--select--)
+            const optVal = companySelect.options[i].value.toLowerCase().replace('general insurance', '').trim();
+            if (optVal.includes(insurer) || insurer.includes(optVal)) {
+                bestMatchIndex = i;
+                break; 
+            }
+        }
+        if(bestMatchIndex > 0) companySelect.selectedIndex = bestMatchIndex;
+    }
+}
 
 /* ------------------ Utils ------------------ */
 function showMsg(text, type='info', ms=2500){
